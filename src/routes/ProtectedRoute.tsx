@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { obtenerSesion } from '../services/autenticacion';
+import { rutaInicioPorRol } from '../services/roles';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -16,7 +17,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
   }
 
   if (allowedRoles && !allowedRoles.includes(sesion.usuario.rol_id)) {
-    return <Navigate to={sesion.usuario.rol_id === 2 ? '/admin/panel' : '/inicio'} replace />;
+    return <Navigate to={rutaInicioPorRol(sesion.usuario.rol_id)} replace />;
   }
 
   return <>{children}</>;

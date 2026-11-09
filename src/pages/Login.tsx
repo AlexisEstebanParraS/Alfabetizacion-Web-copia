@@ -6,6 +6,7 @@ import {
 } from '@ionic/react';
 import { volumeMediumOutline, helpCircleOutline, arrowForwardOutline } from 'ionicons/icons';
 import { iniciarSesion } from '../services/autenticacion';
+import { rutaInicioPorRol } from '../services/roles';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ const Login: React.FC = () => {
     setEnviando(true);
     try {
       const sesion = await iniciarSesion(identificador.trim(), password);
-      navigate(sesion.usuario.rol_id === 2 ? '/admin/panel' : '/inicio', { replace: true });
+      navigate(rutaInicioPorRol(sesion.usuario.rol_id), { replace: true });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'No se pudo iniciar sesión. Inténtalo nuevamente.');
     } finally {
@@ -69,7 +70,7 @@ const Login: React.FC = () => {
               }}>
                 <IonItem lines="none" style={{ border: '2px solid #ccc', borderRadius: '8px', marginBottom: '16px' }}>
                   <IonLabel position="stacked" style={{ fontWeight: 'bold', color: '#333' }}>Correo electrónico</IonLabel>
-                  <IonInput type="email" value={identificador} placeholder="Ej: tunombre@gmail.com" onIonInput={(e) => setIdentificador(e.detail.value ?? '')} />
+                  <IonInput type="email" value={identificador} placeholder="Ej: nombre@correo.cl" onIonInput={(e) => setIdentificador(e.detail.value ?? '')} />
                 </IonItem>
 
                 <IonItem lines="none" style={{ border: '2px solid #ccc', borderRadius: '8px', marginBottom: '20px' }}>

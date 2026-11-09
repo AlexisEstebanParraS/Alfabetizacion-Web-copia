@@ -18,6 +18,7 @@ import ModulosAdministrador from '../pages/ModulosAdministrador';
 import ConfiguracionAdministrador from '../pages/ConfiguracionAdministrador';
 import ProtectedRoute from './ProtectedRoute';
 import { obtenerSesion } from '../services/autenticacion';
+import { ROL_ADMIN, ROL_CIUDADANO } from '../services/roles';
 
 const AppRoutes: React.FC = () => {
   const location = useLocation();
@@ -38,34 +39,34 @@ const AppRoutes: React.FC = () => {
         <Route path="/ayuda" element={<Ayuda />} />
 
         <Route path="/inicio" element={
-          <ProtectedRoute allowedRoles={[1]}><Inicio /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={[ROL_CIUDADANO]}><Inicio /></ProtectedRoute>
         } />
         <Route path="/practicar" element={
-          <ProtectedRoute allowedRoles={[1]}><Practicar /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={[ROL_CIUDADANO]}><Practicar /></ProtectedRoute>
         } />
         <Route path="/practicar/:moduloId" element={
-          <ProtectedRoute allowedRoles={[1]}><Leccion /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={[ROL_CIUDADANO]}><Leccion /></ProtectedRoute>
         } />
         <Route path="/perfil" element={
-          <ProtectedRoute allowedRoles={[1]}><MiPerfil /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={[ROL_CIUDADANO]}><MiPerfil /></ProtectedRoute>
         } />
         <Route path="/configuracion" element={
-          <ProtectedRoute allowedRoles={[1]}><Configuracion /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={[ROL_CIUDADANO]}><Configuracion /></ProtectedRoute>
         } />
         <Route path="/admin/panel" element={
-          <ProtectedRoute allowedRoles={[2]}><PanelAdministrador /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={[ROL_ADMIN]}><PanelAdministrador /></ProtectedRoute>
         } />
         <Route path="/admin/usuarios" element={
-          <ProtectedRoute allowedRoles={[2]}><UsuariosAdministrador /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={[ROL_ADMIN]}><UsuariosAdministrador /></ProtectedRoute>
         } />
         <Route path="/admin/metricas" element={
-          <ProtectedRoute allowedRoles={[2]}><MetricasAdministrador /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={[ROL_ADMIN]}><MetricasAdministrador /></ProtectedRoute>
         } />
         <Route path="/admin/modulos" element={
-          <ProtectedRoute allowedRoles={[2]}><ModulosAdministrador /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={[ROL_ADMIN]}><ModulosAdministrador /></ProtectedRoute>
         } />
         <Route path="/admin/configuracion" element={
-          <ProtectedRoute allowedRoles={[2]}><ConfiguracionAdministrador /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={[ROL_ADMIN]}><ConfiguracionAdministrador /></ProtectedRoute>
         } />
 
         <Route path="/" element={<Navigate to="/bienvenida" replace />} />

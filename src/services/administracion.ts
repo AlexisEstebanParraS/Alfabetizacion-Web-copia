@@ -1,4 +1,4 @@
-import { obtenerSesion } from './autenticacion';
+import { solicitarApi } from './api';
 
 export interface UsuarioAdministracion {
   id: number;
@@ -38,48 +38,6 @@ export interface MetricasAdministracion {
     titulo: string;
     abandonos: number;
   }>;
-}
-
-interface RespuestaApi<T> {
-  ok: boolean;
-  message?: string;
-  error?: { mensaje?: string };
-  data: T;
-  total?: number;
-}
-
-const URL_API = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/$/, '');
-
-async function solicitarApi<T>(ruta: string, opciones: RequestInit = {}): Promise<RespuestaApi<T>> {
-  const sesion = obtenerSesion();
-  if (!sesion) throw new Error('Tu sesión terminó. Inicia sesión nuevamente.');
-
-  let respuesta: Response;
-  try {
-    respuesta = await fetch(`${URL_API}${ruta}`, {
-      ...opciones,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${sesion.token}`,
-        ...opciones.headers,
-      },
-    });
-  } catch {
-    throw new Error('No se pudo conectar con el servicio. Revisa que el servidor esté disponible.');
-  }
-
-  let resultado: RespuestaApi<T>;
-  try {
-    resultado = await respuesta.json() as RespuestaApi<T>;
-  } catch {
-    throw new Error('El servicio respondió con un formato inesperado.');
-  }
-
-  if (!respuesta.ok || resultado.ok !== true) {
-    throw new Error(resultado.error?.mensaje || resultado.message || 'No se pudo completar la solicitud.');
-  }
-
-  return resultado;
 }
 
 export async function obtenerUsuarios(): Promise<UsuarioAdministracion[]> {

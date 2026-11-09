@@ -33,9 +33,9 @@ const Registro: React.FC = () => {
 
   const validarCredenciales = async () => {
     const correo = email.trim();
-    if (!/^[^\s@]+@gmail\.com$/i.test(correo)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
       setErrorPaso(true);
-      setMensajeError('Escribe un correo Gmail válido para crear tu cuenta.');
+      setMensajeError('Escribe un correo válido para crear tu cuenta (por ejemplo: nombre@correo.cl).');
       return;
     }
     if (password.length < 8
@@ -164,7 +164,7 @@ const Registro: React.FC = () => {
                   <>
                     <IonItem lines="none" style={{ border: '2px solid #ccc', borderRadius: '8px', marginBottom: '14px' }}>
                       <IonLabel position="stacked" style={{ fontWeight: 'bold', color: '#333' }}>Correo electrónico</IonLabel>
-                      <IonInput type="email" value={email} placeholder="Ej: tunombre@gmail.com" onIonInput={(e) => setEmail(e.detail.value ?? '')} />
+                      <IonInput type="email" value={email} placeholder="Ej: nombre@correo.cl" onIonInput={(e) => setEmail(e.detail.value ?? '')} />
                     </IonItem>
                     
                     <IonItem lines="none" style={{ border: '2px solid #ccc', borderRadius: '8px', marginBottom: '14px' }}>
