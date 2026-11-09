@@ -8,6 +8,7 @@ import { alertCircleOutline, checkmarkCircleOutline, arrowForwardOutline } from 
 import { obtenerModulo, type Modulo } from '../services/modulos';
 import { actualizarProgreso, iniciarModulo, type CambiosProgreso, type Progreso } from '../services/progreso';
 import Aviso, { type MensajeAviso } from '../components/Aviso';
+import BotonLectura from '../components/BotonLectura';
 import './Leccion.css';
 
 const Leccion: React.FC = () => {
@@ -114,6 +115,19 @@ const Leccion: React.FC = () => {
     ? 'Practica cómo consultar el avance de una solicitud. Usa únicamente la información ficticia de este ejercicio.'
     : 'Aprende a completar una solicitud municipal de ejemplo. La práctica es guiada y no envía información a ningún servicio real.';
 
+  // Lo que se ve en el panel de instrucciones es exactamente lo que se lee en voz alta
+  const instrucciones = paso === 2
+    ? { tipo: 'success', titulo: '¡Felicitaciones!', texto: 'Completaste correctamente esta práctica. La solicitud es ficticia y no se envió.' }
+    : mostrarErrores && hayErrores
+      ? { tipo: 'error', titulo: 'Algo no está bien', texto: 'Revisa los campos marcados en rojo. Puedes corregirlos e intentarlo otra vez.' }
+      : {
+        tipo: 'guide',
+        titulo: paso === 0 ? 'Ingresa al portal del Municipio' : 'Ahora es tu turno, completa el formulario',
+        texto: paso === 0
+          ? descripcion
+          : 'Completa los datos de ejemplo. No escribas información personal real: este ejercicio solo sirve para practicar.',
+      };
+
   if (errorCarga || !modulo) {
     return (
       <IonPage>
@@ -175,32 +189,19 @@ const Leccion: React.FC = () => {
 
           <section className="practica-layout">
             <aside className="practica-instructions">
-              {paso === 2 ? (
-                <div className="practica-message practica-message-success">
-                  <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" />
-                  <div>
-                    <h2>¡Felicitaciones!</h2>
-                    <p>Completaste correctamente esta práctica. La solicitud es ficticia y no se envió.</p>
-                  </div>
+              <div
+                className={`practica-message practica-message-${instrucciones.tipo}`}
+                role={instrucciones.tipo === 'error' ? 'alert' : undefined}
+              >
+                {instrucciones.tipo === 'success' && <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" />}
+                {instrucciones.tipo === 'error' && <IonIcon icon={alertCircleOutline} aria-hidden="true" />}
+                <div>
+                  <h2>{instrucciones.titulo}</h2>
+                  <p>{instrucciones.texto}</p>
                 </div>
-              ) : mostrarErrores && hayErrores ? (
-                <div className="practica-message practica-message-error" role="alert">
-                  <IonIcon icon={alertCircleOutline} aria-hidden="true" />
-                  <div>
-                    <h2>Algo no está bien</h2>
-                    <p>Revisa los campos marcados en rojo. Puedes corregirlos e intentarlo otra vez.</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="practica-message practica-message-guide">
-                  <div>
-                    <h2>{paso === 0 ? 'Ingresa al portal del Municipio' : 'Ahora es tu turno, completa el formulario'}</h2>
-                    <p>{paso === 0
-                      ? descripcion
-                      : 'Completa los datos de ejemplo. No escribas información personal real: este ejercicio solo sirve para practicar.'}</p>
-                  </div>
-                </div>
-              )}
+              </div>
+
+              <BotonLectura texto={`${instrucciones.titulo}. ${instrucciones.texto}`} />
 
               {paso === 2 ? (
                 <div className="practica-next-steps">

@@ -87,11 +87,14 @@ No hubo contacto directo con usuarios reales. Los perfiles son una **caracteriza
 ### Requerimientos Funcionales (RF)
 * **RF01 - Catálogo de Trámites Simulados (Usuario):** El sistema debe listar los módulos interactivos de trámites municipales disponibles (ej. reserva de horas, solicitud de certificados, pago de aseo) con indicadores visuales de nivel de dificultad.
 * **RF02 - Simulador Guiado de Formularios (Usuario):** El sistema guía al usuario paso a paso por un formulario de trámite simulado, valida cada campo antes de continuar y destaca el siguiente elemento con el que debe interactuar.
-* **RF03 - Asistente de Lectura y Ayuda Contextual (Usuario):** El sistema debe ofrecer la opción de activar lectura en audio de los textos e instrucciones de cada pantalla y campo de entrada.
+* **RF03 - Asistente de Lectura y Ayuda Contextual (Usuario):** El sistema lee en voz alta, al presionar "Escuchar", las instrucciones de cada paso de la práctica y las opciones de la pantalla de inicio, en español y a una velocidad pausada.
 * **RF04 - Retroalimentación Inmediata de Errores (Usuario):** El sistema debe entregar mensajes de corrección claros y libres de tecnicismos cuando el usuario cometa una equivocación durante la simulación, permitiendo reintentos ilimitados.
 * **RF05 - Historial y Progreso Formativo (Usuario):** El sistema registra el avance de cada práctica (paso, errores, tiempo y estado) y lo muestra en la pantalla "Mi progreso" con barras de avance e insignias.
-* **RF06 - Gestión de Módulos y Simuladores (Admin):** El sistema debe permitir al administrador crear, modificar y deshabilitar módulos de capacitación y trámites simulados.
-* **RF07 - Métricas de Errores y Usabilidad (Admin):** El sistema debe generar reportes agregados que indiquen qué pasos de los simuladores presentan la mayor tasa de fallos o abandono.
+* **RF06 - Crear Módulos de Capacitación (Admin):** El sistema permite al administrador crear un módulo de práctica con título, descripción, dificultad, cantidad de pasos y estado inicial.
+* **RF07 - Modificar Módulos de Capacitación (Admin):** El sistema permite al administrador modificar los datos de un módulo existente.
+* **RF08 - Habilitar o Deshabilitar Módulos (Admin):** El sistema permite al administrador ocultar un módulo a la ciudadanía (deshabilitarlo) o volver a mostrarlo, sin perder el progreso registrado.
+* **RF09 - Métricas de Errores y Usabilidad (Admin):** El sistema genera reportes agregados que indican qué pasos de los simuladores presentan la mayor tasa de fallos o abandono.
+* **RF10 - Gestión de Cuentas (Admin):** El sistema permite al administrador desactivar o reactivar la cuenta de un ciudadano; una cuenta desactivada no puede iniciar sesión.
 
 ### Requerimientos No Funcionales (RNF)
 * **RNF01 - Usabilidad y Accesibilidad:** La interfaz debe cumplir con criterios de contraste accesible (WCAG AA), tipografía escalable con un tamaño base no inferior a 16px y áreas táctiles de botones de al menos 48x48px.

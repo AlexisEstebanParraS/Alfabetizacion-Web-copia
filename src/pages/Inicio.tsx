@@ -5,7 +5,8 @@ import {
   IonButtons, IonMenuButton, IonIcon, IonCard, IonCardContent,
   IonGrid, IonRow, IonCol, IonButton
 } from '@ionic/react';
-import { volumeMediumOutline, helpCircleOutline, bookOutline, personOutline, settingsOutline, ribbonOutline } from 'ionicons/icons';
+import BotonLectura from '../components/BotonLectura';
+import { helpCircleOutline, bookOutline, personOutline, settingsOutline, ribbonOutline } from 'ionicons/icons';
 import { obtenerSesion } from '../services/autenticacion';
 import { obtenerModulosDisponibles } from '../services/modulos';
 import { obtenerMisProgresos } from '../services/progreso';
@@ -43,10 +44,10 @@ const Inicio: React.FC = () => {
           </IonButtons>
           <IonTitle>Municipio Fácil</IonTitle>
           <IonButtons slot="end">
-            <IonButton fill="clear" routerLink="/ayuda">
-              <IonIcon icon={volumeMediumOutline} slot="start" />
-              Lectura
-            </IonButton>
+            <BotonLectura
+              fill="clear"
+              texto={`Hola${sesion ? `, ${sesion.usuario.nombre}` : ''}. ¿Qué te gustaría practicar hoy? Puedes elegir: Practicar, Mi progreso, Mi perfil, Configuración o Ayuda.`}
+            />
             <IonButton fill="clear" routerLink="/ayuda">
               <IonIcon icon={helpCircleOutline} slot="start" />
               Ayuda
