@@ -192,6 +192,17 @@ erDiagram
 - `UNIQUE (usuario_id, modulo_id)` en `progreso_usuarios`: un usuario no puede iniciar dos veces el mismo módulo.
 - `ON DELETE CASCADE` en el progreso (si se borra el usuario o el módulo), `ON DELETE RESTRICT` en `usuarios.rol_id`, y `ON DELETE SET NULL` en `creado_por`.
 
+### Índices y rendimiento
+
+Optimización de consultas (EF4):
+
+- **Índice en la clave foránea `modulo_id`** de `progreso_usuarios` (`idx_progreso_modulo`): la usan las métricas por módulo y el borrado en cascada al eliminar un módulo. Las claves primarias y las restricciones `UNIQUE` ya tienen índice automático; el `UNIQUE (usuario_id, modulo_id)` sirve también para buscar el progreso de un usuario, por eso no se creó otro índice para `usuario_id`.
+- **Solo las columnas necesarias:** las consultas nombran sus columnas en vez de `SELECT *`, y ninguna devuelve `password_hash`.
+- **Paginación con `LIMIT` y `OFFSET`** en los listados de módulos y usuarios (`?page=1&limit=10`), para no enviar toda la tabla en una respuesta.
+- **Filtros en la consulta:** el ciudadano recibe solo los módulos habilitados y solo su progreso, filtrados con `WHERE` en PostgreSQL y no después en JavaScript.
+
+Un índice no es gratis: ocupa espacio y hace más lentas las escrituras (`INSERT`, `UPDATE`). Por eso solo se agregó donde una consulta frecuente filtra por esa columna.
+
 ---
 
 ## 8. Instalación y configuración

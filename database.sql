@@ -58,6 +58,13 @@ CREATE TABLE IF NOT EXISTS progreso_usuarios (
     CONSTRAINT UQprogreso_usuario_modulo UNIQUE (usuario_id, modulo_id) -- para que un usuario no inicie dos veces el mismo módulo.
 );
 
+-- 5. Índices (EF4: optimización de consultas)
+-- PostgreSQL crea índices automáticos para las claves primarias y las restricciones UNIQUE.
+-- UNIQUE (usuario_id, modulo_id) ya sirve para buscar el progreso de un usuario (usuario_id es su primera columna).
+-- La clave foránea modulo_id no tiene índice automático: se agrega para las consultas por módulo
+-- (métricas del administrador) y para el borrado en cascada al eliminar un módulo.
+CREATE INDEX IF NOT EXISTS idx_progreso_modulo ON progreso_usuarios (modulo_id);
+
 -- DATOS INICIALES Y DE PRUEBA
 INSERT INTO roles (id, nombre, descripcion) VALUES
 (1, 'ciudadano', 'Usuario aprendiz que accede a simuladores y capacitaciones'),
