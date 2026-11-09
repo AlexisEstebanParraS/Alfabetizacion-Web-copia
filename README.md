@@ -108,7 +108,8 @@ Hay dos roles:
 ├── docker-compose.yml          # Orquesta db + api + web
 ├── .env.example                # Plantilla de variables de entorno
 ├── scripts/
-│   └── crear_admin.js          # npm run crear-admin
+│   ├── crear_admin.js          # npm run crear-admin
+│   └── datos_demo.js           # npm run datos-demo (presentación)
 ├── docs/
 │   └── insomnia_collection.json  # Pruebas de la API en Insomnia
 └── src/
@@ -643,6 +644,15 @@ Al registrarse, el ciudadano recibe un **correo de bienvenida** enviado con la A
 - **Configuración:** `RESEND_API_KEY` y `CORREO_REMITENTE` en el `.env`. Si la clave está vacía, el registro funciona igual y no se envía nada.
 - **Fallas:** la llamada tiene un límite de 5 segundos y no bloquea el registro: si el proveedor falla, el usuario se crea igual y el error queda en el registro del servidor.
 - **Limitación del plan gratuito:** con el remitente de prueba `onboarding@resend.dev`, Resend solo entrega correos a la dirección dueña de la cuenta; para enviar a cualquier correo hay que verificar un dominio.
+
+**Cómo activarlo:**
+
+1. Crear una cuenta en [resend.com](https://resend.com) y confirmar el correo.
+2. En *API Keys*, crear una clave con permiso **Sending access** (solo enviar; es más segura que *Full access*). Se muestra una sola vez y empieza con `re_`.
+3. Pegarla en el `.env` como `RESEND_API_KEY=re_...` y reiniciar la API.
+4. Registrar un ciudadano **con el mismo correo de la cuenta de Resend** (con el remitente de prueba solo llega a esa dirección) y revisar la bandeja de entrada.
+
+**Evidencia:** captura del registro (`201`) en Insomnia y del correo recibido. Si el correo no llega, la terminal del backend muestra `Correo de bienvenida no enviado (HTTP …)` con el código que respondió Resend (`401` clave incorrecta, `403` destinatario distinto al dueño de la cuenta).
 
 ---
 
