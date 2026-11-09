@@ -79,3 +79,19 @@ export async function cambiarEstadoModulo(
   });
   return respuesta.data;
 }
+
+/** DELETE /modulos/:id -> también se borra el progreso asociado a ese módulo. */
+export async function eliminarModulo(id: number): Promise<void> {
+  await solicitarApi<ModuloAdministracion>(`/modulos/${id}`, { method: 'DELETE' });
+}
+
+/** PATCH /admin/usuarios/:id -> activar/desactivar una cuenta o cambiar su rol. */
+export async function actualizarUsuario(
+  id: number,
+  cambios: { activo?: boolean; rol_id?: number }
+): Promise<void> {
+  await solicitarApi(`/admin/usuarios/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(cambios),
+  });
+}

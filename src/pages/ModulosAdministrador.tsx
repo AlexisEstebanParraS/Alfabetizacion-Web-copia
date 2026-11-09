@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
   IonButton, IonInput, IonItem, IonLabel, IonModal, IonSelect,
-  IonSelectOption, IonSpinner, IonTextarea,
+  IonSelectOption, IonSpinner, IonTextarea, useIonAlert,
 } from '@ionic/react';
 import AdministracionLayout from '../components/AdministracionLayout';
 import {
-  cambiarEstadoModulo, guardarModulo, obtenerModulos,
+  cambiarEstadoModulo, eliminarModulo, guardarModulo, obtenerModulos,
   type ModuloAdministracion,
 } from '../services/administracion';
 import './VistasAdministrador.css';
@@ -89,6 +89,34 @@ const ModulosAdministrador: React.FC = () => {
     }
   };
 
+  const [mostrarAlerta] = useIonAlert();
+
+  // Eliminar es irreversible y borra el progreso de los ciudadanos: se pide confirmación
+  const confirmarEliminacion = (modulo: ModuloAdministracion) => {
+    void mostrarAlerta({
+      header: 'Eliminar módulo',
+      message: `Se eliminará "${modulo.titulo}" y el progreso de todos los ciudadanos en este módulo. Esta acción no se puede deshacer. Si solo quieres ocultarlo, usa "Deshabilitar".`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          handler: () => {
+            void (async () => {
+              setError('');
+              try {
+                await eliminarModulo(modulo.id);
+                await cargarModulos();
+              } catch (causa) {
+                setError(causa instanceof Error ? causa.message : 'No se pudo eliminar el módulo.');
+              }
+            })();
+          },
+        },
+      ],
+    });
+  };
+
   const habilitados = modulos.filter((modulo) => modulo.estado === 'Habilitado').length;
   const borradores = modulos.filter((modulo) => modulo.estado === 'Borrador').length;
   const deshabilitados = modulos.filter((modulo) => modulo.estado === 'Deshabilitado').length;
@@ -140,6 +168,9 @@ const ModulosAdministrador: React.FC = () => {
                         onClick={() => void alternarEstado(modulo)}
                       >
                         {modulo.estado === 'Habilitado' ? 'Deshabilitar' : 'Habilitar'}
+                      </IonButton>
+                      <IonButton size="small" fill="clear" color="danger" onClick={() => confirmarEliminacion(modulo)}>
+                        Eliminar
                       </IonButton>
                     </td>
                   </tr>
