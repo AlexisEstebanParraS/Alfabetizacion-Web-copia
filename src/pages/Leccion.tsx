@@ -7,6 +7,7 @@ import {
 import { alertCircleOutline, checkmarkCircleOutline, arrowForwardOutline } from 'ionicons/icons';
 import { obtenerModulo, type Modulo } from '../services/modulos';
 import { actualizarProgreso, iniciarModulo, type CambiosProgreso, type Progreso } from '../services/progreso';
+import Aviso, { type MensajeAviso } from '../components/Aviso';
 import './Leccion.css';
 
 const Leccion: React.FC = () => {
@@ -17,6 +18,7 @@ const Leccion: React.FC = () => {
   const [modulo, setModulo] = useState<Modulo | null>(null);
   const [errorCarga, setErrorCarga] = useState('');
   const [avisoProgreso, setAvisoProgreso] = useState('');
+  const [aviso, setAviso] = useState<MensajeAviso | null>(null);
   const progresoRef = useRef<Progreso | null>(null);
   const erroresRef = useRef(0);
   const tiempoBaseRef = useRef(0);
@@ -55,14 +57,16 @@ const Leccion: React.FC = () => {
   const tiempoActual = () => tiempoBaseRef.current + Math.round((Date.now() - inicioRef.current) / 1000);
 
   // Guarda el avance; si falla, la práctica sigue y se muestra un aviso
-  const guardarProgreso = async (cambios: CambiosProgreso) => {
+  const guardarProgreso = async (cambios: CambiosProgreso): Promise<boolean> => {
     const progreso = progresoRef.current;
-    if (!progreso) return;
+    if (!progreso) return false;
     try {
       await actualizarProgreso(progreso.id, { tiempo_segundos: tiempoActual(), ...cambios });
       setAvisoProgreso('');
+      return true;
     } catch {
       setAvisoProgreso('No pudimos guardar tu avance. Puedes seguir practicando.');
+      return false;
     }
   };
 
@@ -90,7 +94,10 @@ const Leccion: React.FC = () => {
       return;
     }
     setPaso(2);
-    void guardarProgreso({ paso_actual: 3, completado: true, errores_cometidos: erroresRef.current });
+    void guardarProgreso({ paso_actual: 3, completado: true, errores_cometidos: erroresRef.current })
+      .then((guardado) => {
+        if (guardado) setAviso({ tipo: 'exito', texto: '¡Práctica completada! Tu avance quedó guardado.' });
+      });
   };
 
   const avanzarAlFormulario = () => {
@@ -297,6 +304,7 @@ const Leccion: React.FC = () => {
               )}
             </div>
           </section>
+      <Aviso aviso={aviso} alCerrar={() => setAviso(null)} />
         </main>
       </IonContent>
     </IonPage>

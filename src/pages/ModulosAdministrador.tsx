@@ -4,6 +4,7 @@ import {
   IonSelectOption, IonSpinner, IonTextarea, useIonAlert,
 } from '@ionic/react';
 import AdministracionLayout from '../components/AdministracionLayout';
+import Aviso, { type MensajeAviso } from '../components/Aviso';
 import {
   cambiarEstadoModulo, eliminarModulo, guardarModulo, obtenerModulos,
   type ModuloAdministracion,
@@ -25,6 +26,7 @@ const ModulosAdministrador: React.FC = () => {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
+  const [aviso, setAviso] = useState<MensajeAviso | null>(null);
   const [error, setError] = useState('');
 
   const cargarModulos = async () => {
@@ -70,6 +72,7 @@ const ModulosAdministrador: React.FC = () => {
     try {
       await guardarModulo(formulario, moduloEditado?.id);
       setModalAbierto(false);
+      setAviso({ tipo: 'exito', texto: moduloEditado ? 'Módulo actualizado.' : 'Módulo creado.' });
       await cargarModulos();
     } catch (causa) {
       setError(causa instanceof Error ? causa.message : 'No se pudo guardar el módulo.');
@@ -83,9 +86,10 @@ const ModulosAdministrador: React.FC = () => {
     setError('');
     try {
       await cambiarEstadoModulo(modulo.id, nuevoEstado);
+      setAviso({ tipo: 'exito', texto: `"${modulo.titulo}" quedó ${nuevoEstado.toLowerCase()}.` });
       await cargarModulos();
     } catch (causa) {
-      setError(causa instanceof Error ? causa.message : 'No se pudo cambiar el estado del módulo.');
+      setAviso({ tipo: 'error', texto: causa instanceof Error ? causa.message : 'No se pudo cambiar el estado del módulo.' });
     }
   };
 
@@ -106,9 +110,10 @@ const ModulosAdministrador: React.FC = () => {
               setError('');
               try {
                 await eliminarModulo(modulo.id);
+                setAviso({ tipo: 'exito', texto: `Se eliminó "${modulo.titulo}".` });
                 await cargarModulos();
               } catch (causa) {
-                setError(causa instanceof Error ? causa.message : 'No se pudo eliminar el módulo.');
+                setAviso({ tipo: 'error', texto: causa instanceof Error ? causa.message : 'No se pudo eliminar el módulo.' });
               }
             })();
           },
@@ -249,6 +254,7 @@ const ModulosAdministrador: React.FC = () => {
           </form>
         </div>
       </IonModal>
+      <Aviso aviso={aviso} alCerrar={() => setAviso(null)} />
     </AdministracionLayout>
   );
 };

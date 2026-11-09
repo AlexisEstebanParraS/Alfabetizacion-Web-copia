@@ -4,6 +4,7 @@ import {
 } from '@ionic/react';
 import { refreshOutline } from 'ionicons/icons';
 import AdministracionLayout from '../components/AdministracionLayout';
+import Aviso, { type MensajeAviso } from '../components/Aviso';
 import { actualizarUsuario, obtenerUsuarios, type UsuarioAdministracion } from '../services/administracion';
 import { obtenerSesion } from '../services/autenticacion';
 import './VistasAdministrador.css';
@@ -15,6 +16,7 @@ const UsuariosAdministrador: React.FC = () => {
   const [error, setError] = useState('');
   const [actualizandoId, setActualizandoId] = useState<number | null>(null);
   const idPropio = obtenerSesion()?.usuario.id;
+  const [aviso, setAviso] = useState<MensajeAviso | null>(null);
 
   const cargarUsuarios = async () => {
     setCargando(true);
@@ -37,9 +39,10 @@ const UsuariosAdministrador: React.FC = () => {
     setError('');
     try {
       await actualizarUsuario(usuario.id, { activo: !usuario.activo });
+      setAviso({ tipo: 'exito', texto: `La cuenta de ${usuario.nombre} quedó ${usuario.activo ? 'desactivada' : 'activa'}.` });
       await cargarUsuarios();
     } catch (causa) {
-      setError(causa instanceof Error ? causa.message : 'No se pudo actualizar el usuario.');
+      setAviso({ tipo: 'error', texto: causa instanceof Error ? causa.message : 'No se pudo actualizar el usuario.' });
     } finally {
       setActualizandoId(null);
     }
@@ -129,6 +132,7 @@ const UsuariosAdministrador: React.FC = () => {
           </div>
         )}
       </section>
+      <Aviso aviso={aviso} alCerrar={() => setAviso(null)} />
     </AdministracionLayout>
   );
 };
