@@ -1,58 +1,67 @@
-import { pool } from '../config/db.js';
 import { ApiError } from '../middlewares/error.js';
+import { ROL_ADMIN } from '../middlewares/auth.js';
+import { leerId } from '../util/parametros.js';
+import { validarCamposPermitidos } from '../util/validacion.js';
+import * as progresoService from '../services/progreso_service.js';
 
-// Función para leer y validar un id de parametro 
-const leerId = (valor, nombre = 'id') => {
-  const id = Number(valor);
-  if (!Number.isInteger(id) || id <= 0) {
-    throw new ApiError(400, `${nombre} debe ser un número entero positivo`);
+const CAMPOS_EDITABLES = ['paso_actual', 'completado', 'errores_cometidos', 'tiempo_segundos'];
+
+/**
+ * Dueño del recurso: el ciudadano solo puede tocar SU progreso (el id sale del token,
+ * nunca del body). El administrador ve todo (null = sin restricción).
+ */
+const duenoPermitido = (req) => (req.usuario.rol_id === ROL_ADMIN ? null : req.usuario.id);
+
+/**
+ * Autorización sobre el recurso: un token válido no permite acceder a cualquier progreso.
+ * 404 si el progreso no existe; 403 si existe pero pertenece a otro usuario.
+ */
+const buscarProgresoAutorizado = async (req, id) => {
+  const progreso = await progresoService.obtenerProgreso(id, null);
+  if (!progreso) throw new ApiError(404, `No existe el progreso con id ${id}`);
+  if (req.usuario.rol_id !== ROL_ADMIN && progreso.usuario_id !== req.usuario.id) {
+    throw new ApiError(403, 'No puedes acceder al progreso de otro usuario');
   }
-  return id;
+  return progreso;
 };
 
-// GET /api/progreso
+// GET /api/progreso -> ciudadano: solo el suyo | admin: todos o ?usuario_id=
 export const listarProgreso = async (req, res) => {
-  const filtros = [];
-  const valores = [];
-  if (req.query.usuario_id) {
-    valores.push(leerId(req.query.usuario_id, 'usuario_id'));
-    filtros.push(`p.usuario_id = $${valores.length}`);
+  let usuarioId = duenoPermitido(req);
+  if (usuarioId === null && req.query.usuario_id !== undefined) {
+    usuarioId = leerId(req.query.usuario_id, 'usuario_id');
   }
-  const where = filtros.length ? `WHERE ${filtros.join(' AND ')}` : '';
-  const { rows } = await pool.query(
-    `SELECT p.*, m.titulo AS modulo_titulo, m.total_pasos
-       FROM progreso_usuarios p
-       JOIN modulos_tutoriales m ON m.id = p.modulo_id
-       ${where} ORDER BY p.id`,
-    valores
-  );
-  res.status(200).json({ ok: true, total: rows.length, data: rows });
+  const progresos = await progresoService.listarProgreso(usuarioId);
+  res.status(200).json({ ok: true, total: progresos.length, data: progresos });
 };
 
-// GET /api/progreso/:id
+// GET /api/progreso/:id -> 403 si es de otro usuario
 export const obtenerProgreso = async (req, res) => {
   const id = leerId(req.params.id);
-  const { rows } = await pool.query('SELECT * FROM progreso_usuarios WHERE id = $1', [id]);
-  if (rows.length === 0) throw new ApiError(404, `No existe el progreso con id ${id}`);
-  res.status(200).json({ ok: true, data: rows[0] });
+  const progreso = await buscarProgresoAutorizado(req, id);
+  res.status(200).json({ ok: true, data: progreso });
 };
 
-// POST /api/progreso -> Si no existe el usuario o el módulo, la FK falla y el error responde 409
+// POST /api/progreso -> body: { modulo_id }. El usuario sale del token:
+// si el cliente envía usuario_id, se rechaza con 400 (campo no permitido).
 export const iniciarProgreso = async (req, res) => {
-  const { usuario_id, modulo_id } = req.body ?? {};
-  const uid = leerId(usuario_id, 'usuario_id');
-  const mid = leerId(modulo_id, 'modulo_id');
-  const { rows } = await pool.query(
-    'INSERT INTO progreso_usuarios (usuario_id, modulo_id) VALUES ($1, $2) RETURNING *',
-    [uid, mid]
-  );
-  res.status(201).json({ ok: true, message: 'Progreso iniciado', data: rows[0] });
+  validarCamposPermitidos(req.body, ['modulo_id']);
+  const moduloId = leerId(req.body.modulo_id, 'modulo_id');
+
+  if (!(await progresoService.moduloHabilitado(moduloId))) {
+    throw new ApiError(404, `No existe un módulo habilitado con id ${moduloId}`);
+  }
+
+  // Si ya lo había iniciado, la restricción UNIQUE hace que el errorHandler responda 409
+  const progreso = await progresoService.crearProgreso(req.usuario.id, moduloId);
+  res.status(201).json({ ok: true, message: 'Progreso iniciado', data: progreso });
 };
 
-// PATCH /api/progreso/:id 
+// PATCH /api/progreso/:id
 export const actualizarProgreso = async (req, res) => {
   const id = leerId(req.params.id);
-  const body = req.body ?? {};
+  validarCamposPermitidos(req.body, CAMPOS_EDITABLES);
+  const body = req.body;
   const errores = [];
 
   if (body.paso_actual !== undefined && (!Number.isInteger(body.paso_actual) || body.paso_actual < 1))
@@ -65,24 +74,29 @@ export const actualizarProgreso = async (req, res) => {
   }
   if (errores.length) throw new ApiError(400, 'Datos inválidos', errores);
 
-  const permitidos = ['paso_actual', 'completado', 'errores_cometidos', 'tiempo_segundos'];
-  const campos = permitidos.filter((c) => body[c] !== undefined);
-  if (campos.length === 0)
-    throw new ApiError(400, `Debes enviar al menos un campo: ${permitidos.join(', ')}`);
+  const campos = {};
+  for (const c of CAMPOS_EDITABLES) if (body[c] !== undefined) campos[c] = body[c];
+  if (Object.keys(campos).length === 0)
+    throw new ApiError(400, `Debes enviar al menos un campo: ${CAMPOS_EDITABLES.join(', ')}`);
 
-  const sets = [...campos.map((c, i) => `${c} = $${i + 1}`), 'actualizado_en = CURRENT_TIMESTAMP'].join(', ');
-  const { rows } = await pool.query(
-    `UPDATE progreso_usuarios SET ${sets} WHERE id = $${campos.length + 1} RETURNING *`,
-    [...campos.map((c) => body[c]), id]
-  );
-  if (rows.length === 0) throw new ApiError(404, `No existe el progreso con id ${id}`);
-  res.status(200).json({ ok: true, message: 'Progreso actualizado', data: rows[0] });
+  const dueno = duenoPermitido(req);
+  const actual = await buscarProgresoAutorizado(req, id);
+
+  // El paso no puede superar la cantidad de pasos del módulo
+  if (campos.paso_actual !== undefined && campos.paso_actual > actual.total_pasos) {
+    throw new ApiError(400, `paso_actual no puede ser mayor que ${actual.total_pasos} (total de pasos del módulo)`);
+  }
+
+  const progreso = await progresoService.actualizarProgreso(id, dueno, campos);
+  if (!progreso) throw new ApiError(404, `No existe el progreso con id ${id}`);
+  res.status(200).json({ ok: true, message: 'Progreso actualizado', data: progreso });
 };
 
-// DELETE /api/progreso/:id 
+// DELETE /api/progreso/:id
 export const eliminarProgreso = async (req, res) => {
   const id = leerId(req.params.id);
-  const { rows } = await pool.query('DELETE FROM progreso_usuarios WHERE id = $1 RETURNING *', [id]);
-  if (rows.length === 0) throw new ApiError(404, `No existe el progreso con id ${id}`);
-  res.status(200).json({ ok: true, message: 'Progreso eliminado', data: rows[0] });
+  await buscarProgresoAutorizado(req, id);
+  const progreso = await progresoService.eliminarProgreso(id, duenoPermitido(req));
+  if (!progreso) throw new ApiError(404, `No existe el progreso con id ${id}`);
+  res.status(200).json({ ok: true, message: 'Progreso eliminado', data: progreso });
 };
