@@ -9,22 +9,18 @@
 ---
 ## Distribución de responsabilidades
 
+Cada integrante es dueño de un corte completo del sistema (base de datos, backend, frontend, pruebas y documentación de su parte), y cada cambio entra por Pull Request revisado por otro integrante.
 
+| Integrante | Corte del sistema | Frontend | Backend |
+| :--- | :--- | :--- | :--- |
+| Alexis Parra | Flujo del ciudadano | Practicar, Lección, Inicio (avance real) | Progreso con control de dueño |
+| Fernando Pacheco | Seguridad y sesión | Cliente HTTP común (`api.ts`), Login, Registro | JWT, CORS, rate limit, XSS, servicio de correo |
+| Gabriel Díaz | Administración y datos | Módulos (crear, editar, deshabilitar, eliminar), Usuarios, Métricas | Módulos, usuarios, métricas, `database.sql`, índices |
+| Israel Pérez | Despliegue y perfil | Mi Perfil, navegación, Docker del frontend | Perfil (`/usuarios/me`), health, docker-compose |
 
+En la Entrega Parcial 1 el equipo trabajó los prototipos de Figma (Alexis, Gabriel e Israel; la versión web, Fernando) y la documentación (Fernando e Israel).
 
-| Nombre | Rol en el proyecto |
-| :--- | :--- |
-| [Alexis Parra   ] | Figma |
-| [Fernando Pacheco] |   Documentación, Figma Web |
-| [Gabriel Diaz ] | Figma |
-| [Israel Pérez ] | Documentación, Figma |
-
-
-Frontend (Ionic + React): estructura de vistas, componentes, navegación con React Router.
-UI/UX y Figma: mockups móvil/web, flujo de navegación, jerarquía visual.
-Backend (a desarrollar en EP2): API REST, base de datos relacional, autenticación JWT.
-Documentación y gestión: README, ramas, control de versiones, evidencia de avance.
-
+---
 ## 1. Justificación del Problema y Usuarios Objetivo (EP 1.2)
 
 ### Contexto y Relevancia del Problema
@@ -104,14 +100,59 @@ supuestos: que el adulto mayor no posee experiencia previa usando plataformas de
    npm install
    ```
 
-4. **Ejecutar servidor local**
+4. **Configurar la URL de la API**
    ```bash
-   npx @ionic/cli serve
+   cp .env.example .env
    ```
 
-5. **Abrir en navegador**
-* Abrir navegador en `http://localhost:8100/`
-* Utilizar aplicación
+   | Variable | Descripción | Ejemplo |
+   |---|---|---|
+   | `VITE_API_URL` | URL base de la API del backend | `http://localhost:3000/api` |
+
+   El backend (rama `backend`) debe estar corriendo, y su variable `FRONTEND_ORIGIN` debe ser la dirección del frontend (por defecto `http://localhost:5173`, la de `npm run dev`; con `ionic serve` es `http://localhost:8100`). CORS compara protocolo + host + puerto: si abres el frontend en otro puerto, cambia esa variable.
+
+5. **Ejecutar servidor local**
+   ```bash
+   npm run dev                 # Vite, en http://localhost:5173
+   # o bien
+   npx @ionic/cli serve        # Ionic, en http://localhost:8100
+   ```
+
+6. **Pruebas**
+   ```bash
+   npx vitest run              # pruebas unitarias (servicios y rutas protegidas)
+   npm run lint
+   ```
+
+### Integración con la API
+
+Todas las llamadas protegidas pasan por `src/services/api.ts`, que agrega el JWT (`Authorization: Bearer`), convierte los errores del backend en mensajes claros y, ante un `401` (token inválido o expirado), cierra la sesión y vuelve al inicio de sesión. La sesión se guarda en `sessionStorage`, así que se cierra al cerrar la pestaña.
+
+| Pantalla | Endpoints | Rol |
+|---|---|---|
+| Registro / Login | `POST /auth/registro`, `POST /auth/login` | Público |
+| Inicio | `GET /modulos`, `GET /progreso` | Ciudadano |
+| Practicar | `GET /modulos`, `GET /progreso` | Ciudadano |
+| Lección | `GET /modulos/:id`, `POST /progreso`, `PATCH /progreso/:id` | Ciudadano |
+| Mi Perfil | `GET /usuarios/me`, `PUT /usuarios/me` | Ciudadano |
+| Usuarios (admin) | `GET /admin/usuarios`, `PATCH /admin/usuarios/:id` | Admin |
+| Métricas (admin) | `GET /admin/metricas` | Admin |
+| Módulos (admin) | `GET`, `POST`, `PUT`, `PATCH`, `DELETE /modulos` | Admin |
+
+La Lección registra el avance real: al abrirla inicia (o retoma) el progreso, cada envío del formulario con errores suma a `errores_cometidos`, y al terminar guarda el tiempo y marca el módulo como completado. Esos datos alimentan las métricas del administrador.
+
+### Docker
+
+El `Dockerfile` tiene dos etapas: Node.js ejecuta `npm run build` y la imagen final solo contiene Nginx con los archivos de `dist/`. `nginx.conf` usa `try_files … /index.html` para que se puedan recargar las rutas de React Router. Nginx entrega los archivos; el JavaScript de React se ejecuta en el navegador.
+
+Se levanta junto con la API y la base de datos con el `docker-compose.yml` de la rama `backend` (ver su README). Para probar solo esta imagen:
+
+```bash
+docker build -t municipio-facil-web .
+docker run --rm -p 127.0.0.1:8080:80 municipio-facil-web
+```
+
+La app queda en `http://localhost:8080`, y la API debe tener `FRONTEND_ORIGIN=http://localhost:8080`.
 
 ## 4. Bocetos de UI/UX y prototipo en Figma (EP 1.3)
 Este objetivo se cumplió de forma **parcial**, considerando únicamente las pantallas que a la fecha ya se encuentran codificadas. Para cada una de ellas se elaboró de forma manual, en Figma, el mockup correspondiente a una funcionalidad definida previamente en los requerimientos del proyecto, con un diseño diferenciado y coherente con el flujo de navegación y la jerarquía de información.
