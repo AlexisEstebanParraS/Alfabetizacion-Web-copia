@@ -2,6 +2,29 @@ import { ApiError } from '../middlewares/error.js';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const passwordSpecialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+const caracteresNoPermitidosRegex = /[<>\u0000]/;
+
+/**
+ * Protección contra XSS: los textos que se muestran en pantalla
+ * (nombres, títulos, descripciones) no pueden contener < ni >.
+ * Tampoco se admite el carácter NUL (\u0000).
+ */
+const contieneHtml = (texto) => typeof texto === 'string' && caracteresNoPermitidosRegex.test(texto);
+
+/**
+ * Contrato de entrada: el cuerpo debe ser un objeto JSON y solo puede traer los campos permitidos.
+ * La lista explícita limita lo que controla el cliente (por ejemplo, no puede enviar rol_id ni usuario_id).
+ * Se valida en el servidor porque las peticiones pueden enviarse sin pasar por el frontend.
+ */
+const validarCamposPermitidos = (body, permitidos) => {
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) {
+    throw new ApiError(400, 'El cuerpo de la petición debe ser un objeto JSON.');
+  }
+  const noPermitidos = Object.keys(body).filter((campo) => !permitidos.includes(campo));
+  if (noPermitidos.length > 0) {
+    throw new ApiError(400, 'La petición incluye campos no permitidos', noPermitidos.map((campo) => `${campo} no está permitido`));
+  }
+};
 
 const validarEmail = (email) => {
   if (typeof email !== 'string' || email.trim() === '') {
@@ -12,9 +35,6 @@ const validarEmail = (email) => {
   }
   if (!emailRegex.test(email.trim())) {
     throw new ApiError(400, 'El correo electrónico no es válido.');
-  }
-  if (!email.trim().toLowerCase().endsWith('@gmail.com')) {
-    throw new ApiError(400, 'El correo electrónico debe ser de Gmail.');
   }
 };
 
@@ -58,6 +78,9 @@ const validarRegistro = (nombre, email, password, telefono) => {
   if (nombre.trim().length > 100) {
     throw new ApiError(400, 'El nombre no puede superar los 100 caracteres.');
   }
+  if (contieneHtml(nombre)) {
+    throw new ApiError(400, 'El nombre no puede contener los caracteres < o >.');
+  }
 
   validarEmail(email);
   validarPassword(password);
@@ -69,4 +92,4 @@ const validarRegistro = (nombre, email, password, telefono) => {
   }
 };
 
-export { validarEmail, validarPassword, validarLogin, validarRegistro };
+export { contieneHtml, validarCamposPermitidos, validarEmail, validarPassword, validarLogin, validarRegistro };

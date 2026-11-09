@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken';
 import { ApiError } from './error.js';
 
-/**
- * Middleware para verificar que la petición incluya un JWT válido
- */
-// Obtener el secreto desde las variables de entorno
+// Roles según database.sql
+export const ROL_CIUDADANO = 1;
+export const ROL_ADMIN = 2;
+
 const JWT_SECRET = process.env.JWT_SECRET;
 
 if (!JWT_SECRET) {
@@ -12,30 +12,32 @@ if (!JWT_SECRET) {
   process.exit(1); // Detiene el servidor si no hay clave secreta
 }
 
+/**
+ * Verifica que la petición traiga "Authorization: Bearer <token>" con un JWT válido.
+ * 401 = no autenticado (falta el token, es inválido o expiró).
+ */
 export const verificarToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const [tipo, token] = (req.headers.authorization ?? '').split(' ');
 
-  if (!token) {
-    throw new ApiError(401, 'Acceso denegado: No se proporcionó un token de autenticación');
+  if (tipo !== 'Bearer' || !token) {
+    return next(new ApiError(401, 'Acceso denegado: No se proporcionó un token de autenticación'));
   }
 
   try {
-    // Firma y verificación estricta con la clave del .env
-    const usuarioDecodificado = jwt.verify(token, JWT_SECRET);
-    req.usuario = usuarioDecodificado;
+    req.usuario = jwt.verify(token, JWT_SECRET);
     next();
-  } catch (error) {
-    next(new ApiError(403, 'Token inválido o expirado'));
+  } catch {
+    next(new ApiError(401, 'Token inválido o expirado'));
   }
 };
 
 /**
- * Middleware opcional para restringir rutas a roles específicos (Ej. Admin) (Veremos si lo usamos a futuro)
+ * Restringe una ruta a administradores.
+ * 403 = autenticado, pero sin permiso.
  */
 export const esAdmin = (req, res, next) => {
-  if (!req.usuario || req.usuario.rol_id !== 2) { // 2 = Admin según nuestro script database.sql
-    throw new ApiError(403, 'Acceso denegado: Se requieren permisos de administrador');
+  if (!req.usuario || req.usuario.rol_id !== ROL_ADMIN) {
+    return next(new ApiError(403, 'Acceso denegado: Se requieren permisos de administrador'));
   }
   next();
 };
