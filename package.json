@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "crear-admin": "node scripts/crear_admin.js"
+    "crear-admin": "node scripts/crear_admin.js",
+    "datos-demo": "node scripts/datos_demo.js"
   },
   "keywords": [],
   "author": "",

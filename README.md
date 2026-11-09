@@ -291,6 +291,15 @@ curl http://localhost:3000/api/health
 # {"ok":true,"message":"API Municipio Fácil operativa","db":"ok"}
 ```
 
+**Datos de demostración** (para presentar la app con métricas interesantes):
+
+```bash
+npm run datos-demo               # 8 ciudadanos @demo.cl con avances distintos
+npm run datos-demo -- --borrar   # elimina esos ciudadanos y su progreso
+```
+
+Las cuentas son `nombre.apellido@demo.cl` (por ejemplo `rosa.munoz@demo.cl`) con la contraseña de `DEMO_PASSWORD`. Se puede ejecutar varias veces sin duplicar datos. Con Docker: `docker compose exec api npm run datos-demo`.
+
 Las rutas protegidas requieren el encabezado:
 
 ```
