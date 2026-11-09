@@ -1,11 +1,25 @@
 import React, { useState } from 'react';
 import {
-  IonBackButton, IonButtons, IonContent, IonHeader, IonItem,
-  IonLabel, IonPage, IonSelect, IonSelectOption, IonTitle, IonToolbar,
+  IonBackButton, IonButtons, IonContent, IonHeader, IonItem, IonLabel, IonList,
+  IonListHeader, IonPage, IonSelect, IonSelectOption, IonTitle, IonToolbar,
 } from '@ionic/react';
+import BotonLectura from '../components/BotonLectura';
+import Aviso, { type MensajeAviso } from '../components/Aviso';
+import { guardarPreferencias, obtenerPreferencias, type TamanoLetra } from '../services/preferencias';
 
 const Configuracion: React.FC = () => {
-  const [fontSize, setFontSize] = useState('18px');
+  const [tamanoLetra, setTamanoLetra] = useState<TamanoLetra>(obtenerPreferencias().tamanoLetra);
+  const [aviso, setAviso] = useState<MensajeAviso | null>(null);
+
+  const cambiarTamano = (nuevo: TamanoLetra) => {
+    try {
+      guardarPreferencias({ tamanoLetra: nuevo });
+      setTamanoLetra(nuevo);
+      setAviso({ tipo: 'exito', texto: 'Preferencia guardada. Se mantendrá la próxima vez que abras la app.' });
+    } catch {
+      setAviso({ tipo: 'error', texto: 'No se pudo guardar la preferencia en este dispositivo.' });
+    }
+  };
 
   return (
     <IonPage>
@@ -15,22 +29,32 @@ const Configuracion: React.FC = () => {
           <IonTitle>Configuración</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding" style={{ fontSize }}>
+      <IonContent className="ion-padding">
         <h1>Accesibilidad</h1>
-        <IonItem>
-          <IonLabel>Tamaño del texto</IonLabel>
-          <IonSelect
-            aria-label="Tamaño del texto"
-            value={fontSize}
-            onIonChange={(event) => setFontSize(event.detail.value)}
-          >
-            <IonSelectOption value="16px">Normal</IonSelectOption>
-            <IonSelectOption value="20px">Grande</IonSelectOption>
-            <IonSelectOption value="24px">Muy grande</IonSelectOption>
-          </IonSelect>
-        </IonItem>
-        <p>El cambio se aplica inmediatamente a esta vista.</p>
+        <p>Estos ajustes se guardan en este dispositivo y se aplican en toda la aplicación.</p>
+
+        <IonList>
+          <IonListHeader><IonLabel>Lectura en pantalla</IonLabel></IonListHeader>
+          <IonItem>
+            <IonSelect
+              label="Tamaño del texto"
+              labelPlacement="stacked"
+              value={tamanoLetra}
+              onIonChange={(e) => cambiarTamano(e.detail.value as TamanoLetra)}
+            >
+              <IonSelectOption value="normal">Normal</IonSelectOption>
+              <IonSelectOption value="grande">Grande</IonSelectOption>
+              <IonSelectOption value="muy-grande">Muy grande</IonSelectOption>
+            </IonSelect>
+          </IonItem>
+
+        </IonList>
+
+        <h2>Vista previa</h2>
+        <p>Así se verá el texto en las prácticas. Presiona "Escuchar" para oír cómo se leen las instrucciones.</p>
+        <BotonLectura texto="Así se escuchan las instrucciones de las prácticas de Municipio Fácil." />
       </IonContent>
+      <Aviso aviso={aviso} alCerrar={() => setAviso(null)} />
     </IonPage>
   );
 };

@@ -101,7 +101,7 @@ No hubo contacto directo con usuarios reales. Los perfiles son una **caracteriza
 * **RNF02 - Rendimiento:** Las vistas y recursos iniciales deben cargar en un tiempo inferior a 2.5 segundos bajo redes móviles estándar (3G/4G).
 * **RNF03 - Diseño Adaptable (Responsividad):** La interfaz debe ajustarse sin pérdida de consistencia funcional entre pantallas móviles (desde 360px de ancho) y navegadores web de escritorio.
 * **RNF04 - Seguridad y Privacidad de Datos:** Los datos que se escriben en los formularios de práctica no salen del navegador: la lección envía al servidor solo 4 valores (paso, errores, tiempo y completado), verificable en la pestaña Red del navegador. Las contraseñas se guardan con bcrypt (costo 10), el token de sesión expira en un máximo de 2 horas y se borra al cerrar la pestaña, y el servidor responde 429 tras 10 solicitudes de inicio de sesión desde una misma IP en 15 minutos.
-* **RNF05 - Compatibilidad Multiplataforma:** La aplicación frontend debe ser ejecutable sin discrepancias visuales tanto en navegadores modernos (Chrome, Firefox, Safari) como empaquetada para dispositivos móviles mediante Capacitor.
+* **RNF05 - Compatibilidad Multiplataforma:** La aplicación funciona en las versiones vigentes de Chrome, Edge, Firefox y Safari, en pantallas desde 360 px hasta 1920 px de ancho sin desplazamiento horizontal, y puede empaquetarse como app Android/iOS con Capacitor.
 
 ---
 
@@ -198,29 +198,27 @@ la arquitectura de navegación de **Municipio Fácil**: estructura de rutas, jer
 La versión móvil en desarrollo.
 ### a) Rutas principales y secundarias
 
-**Rutas implementadas actualmente en el código:**
-- `/` — Redirección automática a `/bienvenida` (`<Navigate to="/bienvenida" replace />`)
-- `/bienvenida` — Pantalla de bienvenida (`Bienvenida.tsx`), con botones "Comenzar" e "Iniciar sesión"
-- `/iniciar-sesion` — Inicio de sesión (`Login.tsx`)
-- `/registro` — Registro guiado (`Registro.tsx`), con tres etapas controladas por estado interno (`etapa`), no por rutas separadas:
-  - Etapa 1: Ingresar nombre (con explicador guiado opcional)
-  - Etapa 2: Ingresar correo y contraseña (con explicador guiado opcional)
-  - Etapa 3: Pantalla "¡Felicidades!"
-- `/inicio` — Página de Inicio (`Inicio.tsx`), con las tarjetas Practicar, Mi Perfil, Configuración y Ayuda (visibles, aún no navegables)
+Todas las rutas están en `src/routes/AppRoutes.tsx`. Las protegidas pasan por `ProtectedRoute`, que exige sesión y el rol correcto; si el rol no corresponde, redirige al inicio de ese rol.
 
-**Rutas planificadas, aún sin implementar (pendientes de conectar en próximas entregas):**
-- `/practicar` — Aprende Paso a Paso (listado de tutoriales), a implementar en EP1.6 o EP2
-- `/practicar/tutorial/:id` — Vista de tutorial interactivo paso a paso (ej. "Solicitar Trámite")
-- `/perfil` — Mi Perfil
-- `/configuracion` — Configuración de Accesibilidad
-- `/ayuda` — Ayuda
-- `/admin/iniciar-sesion` — Inicio de sesión exclusivo del Administrador
-- `/admin/panel` — Panel de administración (raíz del subárbol de Administrador)
-- `/admin/panel/gestion-modulos` — Gestión de módulos
-- `/admin/panel/gestion-modulos/metricas` — Métricas y estadísticas
-- `/admin/panel/gestion-modulos/usuarios` — Gestión de usuarios
-
-Todas estas rutas planificadas ya existen como botones o tarjetas visuales en el código (`IonItem button` en `MenuLateral.tsx`, tarjetas en `Inicio.tsx`), pero aún sin `routerLink` asociado ni componente de vista propio.
+| Ruta | Pantalla | Acceso |
+|---|---|---|
+| `/` y cualquier ruta desconocida | Redirección a `/bienvenida` | Público | — |
+| `/bienvenida` | Bienvenida | Público |
+| `/iniciar-sesion` | Inicio de sesión del ciudadano | Público |
+| `/admin/iniciar-sesion` | Inicio de sesión del administrador | Público |
+| `/registro` | Registro guiado en etapas (nombre; correo y contraseña; confirmación) | Público |
+| `/ayuda` | Ayuda | Público |
+| `/inicio` | Inicio del ciudadano | Ciudadano |
+| `/practicar` | Catálogo de prácticas | Ciudadano |
+| `/practicar/:moduloId` | Lección guiada de un módulo | Ciudadano |
+| `/mi-progreso` | Avance e insignias | Ciudadano |
+| `/perfil` | Mi Perfil | Ciudadano |
+| `/configuracion` | Accesibilidad (tamaño de letra) | Ciudadano |
+| `/admin/panel` | Panel de administración | Admin |
+| `/admin/modulos` | Gestión de módulos | Admin |
+| `/admin/usuarios` | Gestión de usuarios | Admin |
+| `/admin/metricas` | Métricas de aprendizaje | Admin |
+| `/admin/configuracion` | Configuración del administrador | Admin |
 
 ### b) Relaciones jerárquicas entre vistas
 - La arquitectura avanza desde un Nivel 0 público de autenticación, hacia un Nivel 1 centralizado que sirve como panel de control para acceder a las        funcionalidades del Nivel 2. Todo el flujo se apoya en un menú lateral dinámico, que se mantiene oculto durante el acceso y se activa únicamente al iniciar sesión.
@@ -304,3 +302,46 @@ El uso de `IonSplitPane` permite que el mismo menú lateral (`MenuLateral.tsx`) 
 - **Escalabilidad:** dejar los ítems Practicar, Mi Perfil, Configuración y Ayuda ya visibles en el menú y en `Inicio.tsx` —aunque todavía sin ruta— permite conectarlos progresivamente sin rediseñar la navegación general ya construida.
 - **Seguridad y claridad de roles:** concentrar toda la lógica de diferenciación de roles en un único componente `PrivateRoute` (en vez de repetir validaciones en cada vista) reducirá el riesgo de inconsistencias al conectar el backend en EP2.
 - **Jerarquía anidada del Administrador:** modelar "Gestión de módulos" como nodo intermedio entre el panel raíz y sus dos subsecciones (en vez de dejarlas como accesos paralelos).
+
+---
+
+## 6. Capturas de la aplicación
+
+Capturas tomadas de la aplicación funcionando con el backend real (prueba de punta a punta en Chrome).
+
+### Versión web
+
+| Bienvenida | Inicio del ciudadano |
+|---|---|
+| ![Bienvenida en escritorio](docs/capturas/01-bienvenida-web.png) | ![Inicio en escritorio](docs/capturas/02-inicio-web.png) |
+| **Lección completada** | **Mi progreso** |
+| ![Lección completada](docs/capturas/03-leccion-completada-web.png) | ![Mi progreso](docs/capturas/04-mi-progreso-web.png) |
+| **Configuración con letra muy grande** | **Métricas del administrador** |
+| ![Configuración con letra muy grande](docs/capturas/05-configuracion-letra-grande.png) | ![Métricas del administrador](docs/capturas/06-admin-metricas-web.png) |
+
+### Versión móvil (390 × 844)
+
+| Bienvenida | Inicio | Mi progreso |
+|---|---|---|
+| ![Bienvenida en móvil](docs/capturas/07-bienvenida-movil.png) | ![Inicio en móvil](docs/capturas/08-inicio-movil.png) | ![Mi progreso en móvil](docs/capturas/09-mi-progreso-movil.png) |
+
+---
+
+## 7. Rendimiento y accesibilidad
+
+### Accesibilidad (RNF01)
+
+| Mejora | Cómo se implementó |
+|---|---|
+| Zoom en el celular | `index.html` impedía ampliar la pantalla (`user-scalable=no`, `maximum-scale=1.0`). Para personas mayores poder ampliar es esencial, así que se quitó |
+| Tamaño de letra que se mantiene | La pantalla Configuración guarda la preferencia en `localStorage` (`services/preferencias.ts`) y `main.tsx` la aplica antes de mostrar la primera pantalla. localStorage se usa solo para esta preferencia, no para datos personales |
+| Lectura en voz alta (RF03) | Componente `BotonLectura` con la síntesis de voz del navegador (`window.speechSynthesis`), en español de Chile |
+| Avisos claros | Componente `Aviso` (`IonToast`) con el resultado de cada acción; los lectores de pantalla lo anuncian |
+
+### Rendimiento (RNF02)
+
+- **Build de producción con Vite:** `npm run build` prepara HTML, JavaScript y CSS optimizados en `dist/`. Con Docker, Nginx entrega esos archivos y el navegador ejecuta React.
+- **Menos datos por respuesta:** la API devuelve solo las columnas necesarias, filtra en la base de datos (el ciudadano recibe solo los módulos habilitados y su progreso) y permite paginar con `?page=&limit=`.
+- **Re-render en vez de recarga:** al cambiar el estado (`useState`), React actualiza solo la parte de la interfaz que cambió; navegar entre rutas no recarga la página (SPA).
+
+**Cómo comprobar el tiempo de carga:** con `npm run build` y `npx vite preview`, abrir `http://localhost:4173/bienvenida`, ir a las herramientas de desarrollo del navegador (F12) → pestaña **Network**, marcar *Disable cache*, elegir la velocidad *Fast 4G* y recargar. El valor **Load** de la parte inferior debe ser menor a 2,5 s (RNF02).
