@@ -1,0 +1,16 @@
+/*
+ * Botones de la cabecera que en celulares muestran solo el ícono.
+ * En pantallas angostas el texto ocupa el espacio del título ("Mun..."),
+ * así que se oculta. El nombre del botón lo sigue anunciando el lector
+ * de pantalla gracias a su aria-label.
+ */
+@media (max-width: 480px) {
+  .solo-icono-movil .boton-texto {
+    display: none;
+  }
+
+  /* Sin texto al lado, el ícono no necesita margen */
+  .solo-icono-movil ion-icon[slot='start'] {
+    margin: 0;
+  }
+}

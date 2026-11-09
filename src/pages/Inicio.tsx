@@ -46,11 +46,12 @@ const Inicio: React.FC = () => {
           <IonButtons slot="end">
             <BotonLectura
               fill="clear"
+              soloIconoEnMovil
               texto={`Hola${sesion ? `, ${sesion.usuario.nombre}` : ''}. ¿Qué te gustaría practicar hoy? Puedes elegir: Practicar, Mi progreso, Mi perfil, Configuración o Ayuda.`}
             />
-            <IonButton fill="clear" routerLink="/ayuda">
-              <IonIcon icon={helpCircleOutline} slot="start" />
-              Ayuda
+            <IonButton fill="clear" routerLink="/ayuda" className="solo-icono-movil" aria-label="Ayuda">
+              <IonIcon icon={helpCircleOutline} slot="start" aria-hidden="true" />
+              <span className="boton-texto">Ayuda</span>
             </IonButton>
           </IonButtons>
         </IonToolbar>
