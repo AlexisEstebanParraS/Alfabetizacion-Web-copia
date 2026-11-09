@@ -1,0 +1,708 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_source": "municipio-facil",
+  "resources": [
+    {
+      "_id": "wrk_mf",
+      "_type": "workspace",
+      "name": "Municipio Fácil API",
+      "scope": "collection",
+      "description": "Colección de pruebas de la API (EP2/EF). Ejecuta primero 'Login admin' y 'Registro ciudadano' y copia los tokens en el entorno."
+    },
+    {
+      "_id": "env_mf",
+      "_type": "environment",
+      "parentId": "wrk_mf",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:3000/api",
+        "token_ciudadano": "PEGA_AQUI_EL_TOKEN_DEL_CIUDADANO",
+        "token_admin": "PEGA_AQUI_EL_TOKEN_DEL_ADMIN",
+        "modulo_id": 1,
+        "progreso_id": 1,
+        "usuario_id": 2,
+        "token_ciudadano_2": "PEGA_AQUI_EL_TOKEN_DE_OTRO_CIUDADANO"
+      }
+    },
+    {
+      "_id": "fld_001",
+      "_type": "request_group",
+      "parentId": "wrk_mf",
+      "name": "1. Autenticación"
+    },
+    {
+      "_id": "req_002",
+      "_type": "request",
+      "parentId": "fld_001",
+      "name": "Registro ciudadano (201)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/registro",
+      "description": "Copia data.token en token_ciudadano.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nombre\": \"María González\",\n  \"email\": \"maria@correo.cl\",\n  \"password\": \"Clave#2026\",\n  \"telefono\": \"+56 9 1234 5678\"\n}"
+      },
+      "authentication": {}
+    },
+    {
+      "_id": "req_003",
+      "_type": "request",
+      "parentId": "fld_001",
+      "name": "Registro email repetido (409)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/registro",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nombre\": \"María\",\n  \"email\": \"maria@correo.cl\",\n  \"password\": \"Clave#2026\"\n}"
+      },
+      "authentication": {}
+    },
+    {
+      "_id": "req_004",
+      "_type": "request",
+      "parentId": "fld_001",
+      "name": "Registro contraseña débil (400)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/registro",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nombre\": \"María\",\n  \"email\": \"otra@correo.cl\",\n  \"password\": \"debil\"\n}"
+      },
+      "authentication": {}
+    },
+    {
+      "_id": "req_005",
+      "_type": "request",
+      "parentId": "fld_001",
+      "name": "Registro con HTML en nombre (400, XSS)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/registro",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nombre\": \"<script>alert(1)</script>\",\n  \"email\": \"xss@correo.cl\",\n  \"password\": \"Clave#2026\"\n}"
+      },
+      "authentication": {}
+    },
+    {
+      "_id": "req_006",
+      "_type": "request",
+      "parentId": "fld_001",
+      "name": "Login ciudadano (200)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/login",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"maria@correo.cl\",\n  \"password\": \"Clave#2026\"\n}"
+      },
+      "authentication": {}
+    },
+    {
+      "_id": "req_007",
+      "_type": "request",
+      "parentId": "fld_001",
+      "name": "Login admin (200)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/login",
+      "description": "Admin creado con npm run crear-admin. Copia data.token en token_admin.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"admin@municipiofacil.cl\",\n  \"password\": \"Cambia#Esta1\"\n}"
+      },
+      "authentication": {}
+    },
+    {
+      "_id": "req_008",
+      "_type": "request",
+      "parentId": "fld_001",
+      "name": "Login contraseña incorrecta (401)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/login",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"maria@correo.cl\",\n  \"password\": \"Mala#9999\"\n}"
+      },
+      "authentication": {}
+    },
+    {
+      "_id": "fld_009",
+      "_type": "request_group",
+      "parentId": "wrk_mf",
+      "name": "2. Módulos"
+    },
+    {
+      "_id": "req_010",
+      "_type": "request",
+      "parentId": "fld_009",
+      "name": "Listar módulos ciudadano (200, solo habilitados)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/modulos",
+      "description": "",
+      "headers": [],
+      "body": {},
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_ciudadano }}"
+      }
+    },
+    {
+      "_id": "req_011",
+      "_type": "request",
+      "parentId": "fld_009",
+      "name": "Listar módulos admin (200, todos)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/modulos",
+      "description": "",
+      "headers": [],
+      "body": {},
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_admin }}"
+      }
+    },
+    {
+      "_id": "req_012",
+      "_type": "request",
+      "parentId": "fld_009",
+      "name": "Listar módulos paginado (200)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/modulos?page=1&limit=2",
+      "description": "",
+      "headers": [],
+      "body": {},
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_admin }}"
+      }
+    },
+    {
+      "_id": "req_013",
+      "_type": "request",
+      "parentId": "fld_009",
+      "name": "Filtro inválido (400)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/modulos?estado=Raro",
+      "description": "",
+      "headers": [],
+      "body": {},
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_admin }}"
+      }
+    },
+    {
+      "_id": "req_014",
+      "_type": "request",
+      "parentId": "fld_009",
+      "name": "Listar sin token (401)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/modulos",
+      "description": "",
+      "headers": [],
+      "body": {},
+      "authentication": {}
+    },
+    {
+      "_id": "req_015",
+      "_type": "request",
+      "parentId": "fld_009",
+      "name": "Obtener módulo (200)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/modulos/{{ _.modulo_id }}",
+      "description": "",
+      "headers": [],
+      "body": {},
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_ciudadano }}"
+      }
+    },
+    {
+      "_id": "req_016",
+      "_type": "request",
+      "parentId": "fld_009",
+      "name": "Módulo deshabilitado como ciudadano (404)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/modulos/4",
+      "description": "",
+      "headers": [],
+      "body": {},
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_ciudadano }}"
+      }
+    },
+    {
+      "_id": "req_017",
+      "_type": "request",
+      "parentId": "fld_009",
+      "name": "Crear módulo como ciudadano (403)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/modulos",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"Pagar permiso de circulación\",\n  \"descripcion\": \"Simulación de pago\"\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_ciudadano }}"
+      }
+    },
+    {
+      "_id": "req_018",
+      "_type": "request",
+      "parentId": "fld_009",
+      "name": "Crear módulo como admin (201)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/modulos",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"Pagar permiso de circulación\",\n  \"descripcion\": \"Simulación de pago\",\n  \"dificultad\": \"Media\",\n  \"total_pasos\": 3,\n  \"estado\": \"Borrador\"\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_admin }}"
+      }
+    },
+    {
+      "_id": "req_019",
+      "_type": "request",
+      "parentId": "fld_009",
+      "name": "Reemplazar módulo (PUT 200)",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/modulos/{{ _.modulo_id }}",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"Solicitar Trámite\",\n  \"descripcion\": \"Aprende a solicitar patentes.\",\n  \"dificultad\": \"Facil\",\n  \"total_pasos\": 3,\n  \"estado\": \"Habilitado\"\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_admin }}"
+      }
+    },
+    {
+      "_id": "req_020",
+      "_type": "request",
+      "parentId": "fld_009",
+      "name": "Modificar estado (PATCH 200)",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/modulos/{{ _.modulo_id }}",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"estado\": \"Habilitado\"\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_admin }}"
+      }
+    },
+    {
+      "_id": "req_021",
+      "_type": "request",
+      "parentId": "fld_009",
+      "name": "Eliminar módulo (DELETE 200)",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/modulos/5",
+      "description": "Cambia el id por el del módulo creado en esta colección.",
+      "headers": [],
+      "body": {},
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_admin }}"
+      }
+    },
+    {
+      "_id": "fld_022",
+      "_type": "request_group",
+      "parentId": "wrk_mf",
+      "name": "3. Progreso"
+    },
+    {
+      "_id": "req_023",
+      "_type": "request",
+      "parentId": "fld_022",
+      "name": "Iniciar módulo (201)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/progreso",
+      "description": "Copia data.id en progreso_id.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"modulo_id\": 1\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_ciudadano }}"
+      }
+    },
+    {
+      "_id": "req_024",
+      "_type": "request",
+      "parentId": "fld_022",
+      "name": "Iniciar repetido (409)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/progreso",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"modulo_id\": 1\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_ciudadano }}"
+      }
+    },
+    {
+      "_id": "req_025",
+      "_type": "request",
+      "parentId": "fld_022",
+      "name": "Mi progreso (200)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/progreso",
+      "description": "",
+      "headers": [],
+      "body": {},
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_ciudadano }}"
+      }
+    },
+    {
+      "_id": "req_026",
+      "_type": "request",
+      "parentId": "fld_022",
+      "name": "Actualizar avance (200)",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/progreso/{{ _.progreso_id }}",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"paso_actual\": 2,\n  \"errores_cometidos\": 1,\n  \"tiempo_segundos\": 45\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_ciudadano }}"
+      }
+    },
+    {
+      "_id": "req_027",
+      "_type": "request",
+      "parentId": "fld_022",
+      "name": "Paso mayor al total (400)",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/progreso/{{ _.progreso_id }}",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"paso_actual\": 99\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_ciudadano }}"
+      }
+    },
+    {
+      "_id": "req_027b",
+      "_type": "request",
+      "parentId": "fld_022",
+      "name": "Iniciar con usuario_id (400, campo no permitido)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/progreso",
+      "description": "El usuario sale del token: enviar usuario_id se rechaza con 400.",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"modulo_id\": 2,\n  \"usuario_id\": 1\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_ciudadano }}"
+      }
+    },
+    {
+      "_id": "req_027c",
+      "_type": "request",
+      "parentId": "fld_022",
+      "name": "Progreso de otro ciudadano (403)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/progreso/{{ _.progreso_id }}",
+      "description": "Registra un segundo ciudadano, copia su token en token_ciudadano_2 e intenta leer el progreso del primero.",
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_ciudadano_2 }}"
+      }
+    },
+    {
+      "_id": "req_028",
+      "_type": "request",
+      "parentId": "fld_022",
+      "name": "Progreso de todos (admin 200)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/progreso",
+      "description": "",
+      "headers": [],
+      "body": {},
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_admin }}"
+      }
+    },
+    {
+      "_id": "fld_029",
+      "_type": "request_group",
+      "parentId": "wrk_mf",
+      "name": "4. Administración"
+    },
+    {
+      "_id": "req_030",
+      "_type": "request",
+      "parentId": "fld_029",
+      "name": "Usuarios (admin 200)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/admin/usuarios",
+      "description": "",
+      "headers": [],
+      "body": {},
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_admin }}"
+      }
+    },
+    {
+      "_id": "req_031",
+      "_type": "request",
+      "parentId": "fld_029",
+      "name": "Usuarios como ciudadano (403)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/admin/usuarios",
+      "description": "",
+      "headers": [],
+      "body": {},
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_ciudadano }}"
+      }
+    },
+    {
+      "_id": "req_032",
+      "_type": "request",
+      "parentId": "fld_029",
+      "name": "Desactivar usuario (200)",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/admin/usuarios/{{ _.usuario_id }}",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"activo\": false\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_admin }}"
+      }
+    },
+    {
+      "_id": "req_033",
+      "_type": "request",
+      "parentId": "fld_029",
+      "name": "Reactivar usuario (200)",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/admin/usuarios/{{ _.usuario_id }}",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"activo\": true\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_admin }}"
+      }
+    },
+    {
+      "_id": "req_034",
+      "_type": "request",
+      "parentId": "fld_029",
+      "name": "Métricas (200)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/admin/metricas",
+      "description": "",
+      "headers": [],
+      "body": {},
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_admin }}"
+      }
+    },
+    {
+      "_id": "fld_035",
+      "_type": "request_group",
+      "parentId": "wrk_mf",
+      "name": "5. Perfil y estado"
+    },
+    {
+      "_id": "req_036",
+      "_type": "request",
+      "parentId": "fld_035",
+      "name": "Mi perfil (200)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/usuarios/me",
+      "description": "",
+      "headers": [],
+      "body": {},
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_ciudadano }}"
+      }
+    },
+    {
+      "_id": "req_037",
+      "_type": "request",
+      "parentId": "fld_035",
+      "name": "Actualizar mi perfil (200)",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/usuarios/me",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nombre\": \"María José González\",\n  \"telefono\": \"+56 9 8765 4321\"\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token_ciudadano }}"
+      }
+    },
+    {
+      "_id": "req_038",
+      "_type": "request",
+      "parentId": "fld_035",
+      "name": "Health (200)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/health",
+      "description": "",
+      "headers": [],
+      "body": {},
+      "authentication": {}
+    }
+  ]
+}
