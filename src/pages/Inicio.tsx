@@ -5,7 +5,7 @@ import {
   IonButtons, IonMenuButton, IonIcon, IonCard, IonCardContent,
   IonGrid, IonRow, IonCol, IonButton
 } from '@ionic/react';
-import { volumeMediumOutline, helpCircleOutline, bookOutline, personOutline, settingsOutline } from 'ionicons/icons';
+import { volumeMediumOutline, helpCircleOutline, bookOutline, personOutline, settingsOutline, ribbonOutline } from 'ionicons/icons';
 import { obtenerSesion } from '../services/autenticacion';
 import { obtenerModulosDisponibles } from '../services/modulos';
 import { obtenerMisProgresos } from '../services/progreso';
@@ -83,6 +83,20 @@ const Inicio: React.FC = () => {
                     <div>
                       <h2 style={{ fontWeight: 'bold', color: '#111827', fontSize: '1.2rem', margin: '0 0 4px 0' }}>Practicar</h2>
                       <p style={{ margin: 0, color: '#4b5563' }}>Ejercicios divertidos para aprender a usar el teléfono y la computadora sin miedo.</p>
+                    </div>
+                  </IonCardContent>
+                </IonCard>
+              </IonCol>
+
+              <IonCol size="12" sizeMd="6">
+                <IonCard button routerLink="/mi-progreso" style={{ border: '1px solid #e5e7eb', borderRadius: '12px', boxShadow: 'none', height: '100%' }}>
+                  <IonCardContent style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ background: '#e8f5e9', padding: '16px', borderRadius: '50%' }}>
+                      <IonIcon icon={ribbonOutline} style={{ color: '#0f5132', fontSize: '32px' }} />
+                    </div>
+                    <div>
+                      <h2 style={{ fontWeight: 'bold', color: '#111827', fontSize: '1.2rem', margin: '0 0 4px 0' }}>Mi progreso</h2>
+                      <p style={{ margin: 0, color: '#4b5563' }}>Mira cuánto has avanzado y las insignias que has ganado.</p>
                     </div>
                   </IonCardContent>
                 </IonCard>

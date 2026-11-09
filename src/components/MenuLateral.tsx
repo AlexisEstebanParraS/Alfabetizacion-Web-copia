@@ -4,7 +4,7 @@ import {
   IonMenu, IonHeader, IonToolbar, IonTitle, IonContent,
   IonList, IonItem, IonIcon, IonLabel, IonMenuToggle
 } from '@ionic/react';
-import { bookOutline, personOutline, settingsOutline, helpCircleOutline, homeOutline, logOutOutline } from 'ionicons/icons';
+import { bookOutline, personOutline, settingsOutline, helpCircleOutline, homeOutline, logOutOutline, ribbonOutline } from 'ionicons/icons';
 import { eliminarSesion } from '../services/autenticacion';
 
 const MenuLateral: React.FC = () => {
@@ -37,6 +37,16 @@ const MenuLateral: React.FC = () => {
               <IonLabel>
                 <h2 style={{ fontWeight: 'bold', color: '#333' }}>Practicar</h2>
                 <p>Ejercicios divertidos</p>
+              </IonLabel>
+            </IonItem>
+          </IonMenuToggle>
+
+          <IonMenuToggle autoHide={false}>
+            <IonItem button routerLink="/mi-progreso" routerDirection="root" style={{ marginBottom: '10px' }}>
+              <IonIcon icon={ribbonOutline} slot="start" style={{ color: '#0f5132' }} />
+              <IonLabel>
+                <h2 style={{ fontWeight: 'bold', color: '#333' }}>Mi progreso</h2>
+                <p>Avance e insignias</p>
               </IonLabel>
             </IonItem>
           </IonMenuToggle>

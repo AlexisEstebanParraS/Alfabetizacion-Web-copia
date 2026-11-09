@@ -26,13 +26,39 @@ En la Entrega Parcial 1 el equipo trabajó los prototipos de Figma (Alexis, Gabr
 ### Contexto y Relevancia del Problema
 A nivel comunal, el proceso de digitalización municipal ha trasladado trámites esenciales a plataformas en línea. No obstante, esto evidencia la brecha descrita en el **Problema 25: Baja Alfabetización Digital en la Población**, donde segmentos significativos (particularmente adultos mayores y ciudadanos con nula instrucción digital) carecen de las competencias prácticas para utilizar estos sistemas. Las consecuencias directas abarcan exclusión social, dependencia de intermediarios, retrasos en solicitudes críticas (como patentes, permisos o ayudas sociales) e incluso el retraso del proceso de digitalización para acomodar a este sector.
 
+### Evidencia: qué dicen las fuentes
+
+> Esta sección resume **datos de fuentes secundarias**. Los supuestos del equipo están separados más abajo, en "Supuestos de la caracterización".
+
+1. **Los municipios están obligados a digitalizar sus trámites.** La Ley 21.180 de Transformación Digital del Estado (publicada el 11 de noviembre de 2019) modificó la Ley 19.880 para que todo procedimiento administrativo se haga por medios electrónicos [1]. La Ley 19.880 se aplica expresamente a las municipalidades [2]. La misma ley reconoce que hay personas sin acceso o con uso ocasional de medios electrónicos y les permite pedir trámites en papel [1]: el problema existe y el propio Estado lo reconoce.
+2. **Las personas mayores usan internet, pero no para hacer trámites.** En la encuesta de SUBTEL 2025 (5.000 casos), el 74,4 % de las personas de 60 años o más usa internet a diario, pero solo el 23,1 % hace trámites con el Estado en línea, frente a un 56 % entre los 30 y 44 años [3].
+3. **La brecha está en las habilidades, no solo en la conexión.** En la misma encuesta, el 42,9 % de las personas de 60 años o más sabe hacer pagos o transacciones en línea por sí misma (71,7 % del total), y solo el 19,4 % sabe instalar una aplicación [3]. El 82,9 % de los hogares formados solo por personas mayores tiene internet [3].
+4. **La brecha crece con la edad y con menos años de estudio.** La Encuesta Nacional de Calidad de Vida en la Vejez 2022 (UC y Caja Los Andes) muestra que el 23 % de las personas mayores hace trámites por internet, cifra que no supera el 5 % entre quienes tienen más de 80 años o solo educación básica [4]. Usar el banco por internet baja del 40 % (60 a 69 años) al 4 % (80 años o más) [4].
+
+**Qué concluimos:** la conexión ya no es la principal barrera; lo que falta es **práctica guiada** para realizar trámites con confianza. Por eso la aplicación se centra en simular trámites paso a paso, sin riesgo y con retroalimentación inmediata.
+
+#### Referencias
+
+1. Ley N° 21.180, Transformación Digital del Estado. Diario Oficial, 11 de noviembre de 2019. https://www.diariooficial.interior.gob.cl/publicaciones/2019/11/11/42499/01/1680231.pdf
+2. Ley N° 19.880, Bases de los Procedimientos Administrativos, artículo 2 (ámbito de aplicación). https://chile.justia.com/nacionales/leyes/ley-n-19-880/gdoc
+3. SUBTEL y Cadem. *XII Encuesta de Acceso y Uso de Internet en Chile, medición 2025* (5.000 casos, terreno julio a septiembre de 2025). Tablas 13, 14 y 18. https://www.subtel.gob.cl/wp-content/uploads/2026/02/Informe-Final-Acceso-y-Uso-Internet-2025_03.pdf
+4. Pontificia Universidad Católica de Chile y Caja Los Andes. *Sexta Encuesta Nacional de Calidad de Vida en la Vejez 2022*, capítulo 4: Acceso a las TICs. https://encuestacalidaddevidaenlavejez.uc.cl/wp-content/uploads/2023/08/Cap-4-Acceso-a-TICs-1-1.pdf
+
 ### Roles del sistema, accesibilidad y supuestos
 La aplicación web deberá considerar dentro del sistema, al menos dos roles claramente diferenciados: el **ciudadano o usuario final**, quien interactúa con los módulos de simulación y aprendizaje, y el **funcionario o coordinador de capacitación**, encargado de diseñar y gestionar dichos módulos. El coordinador de capacitación también actuará como **administrador del sistema** para tareas de mantenimiento y configuración.
 
 En cuanto a las necesidades de accesibilidad, seguridad y privacidad, la aplicación deberá ofrecer una interfaz con opciones para aumentar el tamaño del texto, hacer uso de un modo oscuro, activar la narración, activar las notificaciones y cambiar el idioma. También debe contar con protección adecuada de los datos personales ingresados durante las simulaciones de trámites.
 
-Finalmente, dado que no se tuvo contacto directo con usuarios reales, la caracterización de los perfiles se construyó a partir de los siguientes
-supuestos: que el adulto mayor no posee experiencia previa usando plataformas de trámites en línea y que su principal barrera es actitudinal, puesto que puede tener miedo a equivocarse, y que el funcionario municipal cuenta con la autorización y el conocimiento técnico suficiente para diseñar y ajustar los módulos de capacitación sin requerir aprobación de sus superiores.
+#### Supuestos de la caracterización
+
+No hubo contacto directo con usuarios reales. Los perfiles son una **caracterización preliminar** basada en las fuentes anteriores y en estos supuestos razonados, que no son resultados de investigación con usuarios:
+
+| Supuesto | En qué se apoya |
+|---|---|
+| La persona mayor tiene smartphone e internet, pero no experiencia en trámites en línea | Fuentes [3] y [4]: alto uso diario de internet y bajo uso para trámites |
+| Su principal barrera es el miedo a equivocarse, más que la falta de equipo | Inferencia del equipo a partir de [3]: pocas personas mayores saben hacer pagos o instalar aplicaciones por sí mismas |
+| Las personas con menos años de estudio y las mayores de 80 son las más rezagadas | Fuente [4] |
+| El funcionario municipal puede diseñar y ajustar los módulos sin aprobación de sus superiores | Supuesto del equipo, sin fuente |
 
 ### Caracterización y Perfiles de Usuario (Proto-Personas)
 
@@ -60,10 +86,10 @@ supuestos: que el adulto mayor no posee experiencia previa usando plataformas de
 
 ### Requerimientos Funcionales (RF)
 * **RF01 - Catálogo de Trámites Simulados (Usuario):** El sistema debe listar los módulos interactivos de trámites municipales disponibles (ej. reserva de horas, solicitud de certificados, pago de aseo) con indicadores visuales de nivel de dificultad.
-* **RF02 - Simulador Guiado de Formularios (Usuario):** El sistema debe permitir al usuario completar campos de formularios paso a paso dentro de un entorno de prueba controlado, validando entradas y destacando el siguiente elemento a interactuar mediante señales visuales.
+* **RF02 - Simulador Guiado de Formularios (Usuario):** El sistema guía al usuario paso a paso por un formulario de trámite simulado, valida cada campo antes de continuar y destaca el siguiente elemento con el que debe interactuar.
 * **RF03 - Asistente de Lectura y Ayuda Contextual (Usuario):** El sistema debe ofrecer la opción de activar lectura en audio de los textos e instrucciones de cada pantalla y campo de entrada.
 * **RF04 - Retroalimentación Inmediata de Errores (Usuario):** El sistema debe entregar mensajes de corrección claros y libres de tecnicismos cuando el usuario cometa una equivocación durante la simulación, permitiendo reintentos ilimitados.
-* **RF05 - Historial y Progreso Formativo (Usuario):** El sistema debe registrar y desplegar los módulos completados con éxito por el usuario y los logros obtenidos de forma gráfica y simplificada.
+* **RF05 - Historial y Progreso Formativo (Usuario):** El sistema registra el avance de cada práctica (paso, errores, tiempo y estado) y lo muestra en la pantalla "Mi progreso" con barras de avance e insignias.
 * **RF06 - Gestión de Módulos y Simuladores (Admin):** El sistema debe permitir al administrador crear, modificar y deshabilitar módulos de capacitación y trámites simulados.
 * **RF07 - Métricas de Errores y Usabilidad (Admin):** El sistema debe generar reportes agregados que indiquen qué pasos de los simuladores presentan la mayor tasa de fallos o abandono.
 

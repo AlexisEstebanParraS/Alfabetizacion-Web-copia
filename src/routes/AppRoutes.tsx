@@ -9,6 +9,7 @@ import Inicio from '../pages/Inicio';
 import Practicar from '../pages/Practicar';
 import Leccion from '../pages/Leccion';
 import MiPerfil from '../pages/MiPerfil';
+import MiProgreso from '../pages/MiProgreso';
 import Configuracion from '../pages/Configuracion';
 import Ayuda from '../pages/Ayuda';
 import PanelAdministrador from '../pages/PanelAdministrador';
@@ -46,6 +47,9 @@ const AppRoutes: React.FC = () => {
         } />
         <Route path="/practicar/:moduloId" element={
           <ProtectedRoute allowedRoles={[ROL_CIUDADANO]}><Leccion /></ProtectedRoute>
+        } />
+        <Route path="/mi-progreso" element={
+          <ProtectedRoute allowedRoles={[ROL_CIUDADANO]}><MiProgreso /></ProtectedRoute>
         } />
         <Route path="/perfil" element={
           <ProtectedRoute allowedRoles={[ROL_CIUDADANO]}><MiPerfil /></ProtectedRoute>
