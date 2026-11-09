@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
   IonButtons, IonMenuButton, IonIcon, IonCard, IonCardContent,
@@ -6,9 +7,32 @@ import {
 } from '@ionic/react';
 import { volumeMediumOutline, helpCircleOutline, bookOutline, personOutline, settingsOutline } from 'ionicons/icons';
 import { obtenerSesion } from '../services/autenticacion';
+import { obtenerModulosDisponibles } from '../services/modulos';
+import { obtenerMisProgresos } from '../services/progreso';
 
 const Inicio: React.FC = () => {
   const sesion = obtenerSesion();
+  const location = useLocation();
+  const [resumen, setResumen] = useState<{ completadas: number; total: number } | null>(null);
+
+  // Avance real del ciudadano. Ionic mantiene la página en memoria al navegar,
+  // por eso se vuelve a cargar cada vez que la ruta activa es /inicio.
+  useEffect(() => {
+    if (location.pathname !== '/inicio') return;
+    const cargar = async () => {
+      try {
+        const modulos = await obtenerModulosDisponibles();
+        const progresos = await obtenerMisProgresos();
+        const completadas = progresos.filter(
+          (p) => p.completado && modulos.some((m) => m.id === p.modulo_id)
+        ).length;
+        setResumen({ completadas, total: modulos.length });
+      } catch {
+        setResumen(null);
+      }
+    };
+    void cargar();
+  }, [location.pathname]);
 
   return (
     <IonPage>
@@ -39,9 +63,11 @@ const Inicio: React.FC = () => {
               ¡Hola{sesion ? `, ${sesion.usuario.nombre}` : ''}! Bienvenido de vuelta a tu espacio de aprendizaje.
             </h1>
             <p style={{ fontSize: '1.2rem', color: '#4b5563' }}>¿Qué te gustaría practicar hoy?</p>
-            <div style={{ background: '#d1e7dd', color: '#0f5132', padding: '12px', borderRadius: '8px', fontWeight: 'bold', display: 'inline-block', marginTop: '10px' }}>
-              🔥 Racha de hoy: ¡Llevas 5 días practicando seguido!
-            </div>
+            {resumen && resumen.total > 0 && (
+              <div style={{ background: '#d1e7dd', color: '#0f5132', padding: '12px', borderRadius: '8px', fontWeight: 'bold', display: 'inline-block', marginTop: '10px' }}>
+                📘 Has completado {resumen.completadas} de {resumen.total} prácticas
+              </div>
+            )}
           </div>
 
           <h2 style={{ fontWeight: 'bold', color: '#111827', marginBottom: '16px' }}>Elige una actividad para comenzar</h2>

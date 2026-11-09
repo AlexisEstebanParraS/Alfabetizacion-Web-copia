@@ -1,16 +1,70 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   IonBackButton, IonButton, IonButtons, IonContent, IonIcon, IonInput,
-  IonItem, IonLabel, IonPage, IonSelect, IonSelectOption, IonTitle, IonToolbar,
+  IonItem, IonLabel, IonPage, IonSelect, IonSelectOption, IonSpinner, IonTitle, IonToolbar,
 } from '@ionic/react';
 import { alertCircleOutline, checkmarkCircleOutline, arrowForwardOutline } from 'ionicons/icons';
+import { obtenerModulo, type Modulo } from '../services/modulos';
+import { actualizarProgreso, iniciarModulo, type CambiosProgreso, type Progreso } from '../services/progreso';
 import './Leccion.css';
 
 const Leccion: React.FC = () => {
   const { moduloId } = useParams<{ moduloId: string }>();
-  const esConsulta = moduloId === 'consultar-solicitud';
-  const tituloPractica = esConsulta ? 'Consultar una solicitud' : 'Solicitar un trámite municipal';
+  const idModulo = Number(moduloId);
+
+  // El módulo y el progreso vienen de la API
+  const [modulo, setModulo] = useState<Modulo | null>(null);
+  const [errorCarga, setErrorCarga] = useState('');
+  const [avisoProgreso, setAvisoProgreso] = useState('');
+  const progresoRef = useRef<Progreso | null>(null);
+  const erroresRef = useRef(0);
+  const tiempoBaseRef = useRef(0);
+  const inicioRef = useRef(Date.now());
+
+  const esConsulta = modulo?.titulo.toLowerCase().includes('consultar') ?? false;
+  const tituloPractica = modulo?.titulo ?? 'Práctica';
+
+  useEffect(() => {
+    let cancelado = false;
+    if (!Number.isInteger(idModulo) || idModulo <= 0) {
+      setErrorCarga('La práctica solicitada no existe.');
+      return undefined;
+    }
+
+    const cargar = async () => {
+      try {
+        const datosModulo = await obtenerModulo(idModulo);
+        const progreso = await iniciarModulo(idModulo);
+        if (cancelado) return;
+        progresoRef.current = progreso;
+        erroresRef.current = progreso.errores_cometidos;
+        tiempoBaseRef.current = progreso.tiempo_segundos;
+        inicioRef.current = Date.now();
+        setModulo(datosModulo);
+      } catch (causa) {
+        if (!cancelado) setErrorCarga(causa instanceof Error ? causa.message : 'No se pudo cargar la práctica.');
+      }
+    };
+    void cargar();
+
+    return () => { cancelado = true; };
+  }, [idModulo]);
+
+  // Tiempo acumulado = lo guardado antes + lo de esta sesión
+  const tiempoActual = () => tiempoBaseRef.current + Math.round((Date.now() - inicioRef.current) / 1000);
+
+  // Guarda el avance; si falla, la práctica sigue y se muestra un aviso
+  const guardarProgreso = async (cambios: CambiosProgreso) => {
+    const progreso = progresoRef.current;
+    if (!progreso) return;
+    try {
+      await actualizarProgreso(progreso.id, { tiempo_segundos: tiempoActual(), ...cambios });
+      setAvisoProgreso('');
+    } catch {
+      setAvisoProgreso('No pudimos guardar tu avance. Puedes seguir practicando.');
+    }
+  };
 
   const [paso, setPaso] = useState(0);
   const [mostrarErrores, setMostrarErrores] = useState(false);
@@ -29,7 +83,19 @@ const Leccion: React.FC = () => {
   const revisarFormulario = (evento: React.FormEvent<HTMLFormElement>) => {
     evento.preventDefault();
     setMostrarErrores(true);
-    if (!hayErrores) setPaso(2);
+    if (hayErrores) {
+      // Cada envío con errores suma 1 a errores_cometidos (alimenta las métricas del admin)
+      erroresRef.current += 1;
+      void guardarProgreso({ errores_cometidos: erroresRef.current });
+      return;
+    }
+    setPaso(2);
+    void guardarProgreso({ paso_actual: 3, completado: true, errores_cometidos: erroresRef.current });
+  };
+
+  const avanzarAlFormulario = () => {
+    setPaso(1);
+    void guardarProgreso({ paso_actual: 2 });
   };
 
   const actualizarCampo = (actualizar: (valor: string) => void) => (valor: string) => {
@@ -40,6 +106,30 @@ const Leccion: React.FC = () => {
   const descripcion = esConsulta
     ? 'Practica cómo consultar el avance de una solicitud. Usa únicamente la información ficticia de este ejercicio.'
     : 'Aprende a completar una solicitud municipal de ejemplo. La práctica es guiada y no envía información a ningún servicio real.';
+
+  if (errorCarga || !modulo) {
+    return (
+      <IonPage>
+        <IonToolbar color="light" className="practica-toolbar">
+          <IonButtons slot="start">
+            <IonBackButton defaultHref="/practicar" text="Prácticas" />
+          </IonButtons>
+          <IonTitle>Municipio Fácil</IonTitle>
+        </IonToolbar>
+        <IonContent className="ion-padding">
+          {errorCarga ? (
+            <div role="alert">
+              <h1>No pudimos abrir la práctica</h1>
+              <p>{errorCarga}</p>
+              <IonButton routerLink="/practicar">Volver a las prácticas</IonButton>
+            </div>
+          ) : (
+            <IonSpinner name="crescent" aria-label="Cargando práctica" />
+          )}
+        </IonContent>
+      </IonPage>
+    );
+  }
 
   return (
     <IonPage>
@@ -117,6 +207,8 @@ const Leccion: React.FC = () => {
                 </div>
               )}
 
+              {avisoProgreso && <p className="practica-field-error-text" role="status">{avisoProgreso}</p>}
+
               {paso > 0 && (
                 <IonButton fill="outline" onClick={() => {
                   setPaso((actual) => Math.max(0, actual - 1));
@@ -134,7 +226,7 @@ const Leccion: React.FC = () => {
                     <span className="practica-seal" aria-hidden="true">MF</span>
                     <h2>Acceso Ciudadano</h2>
                     <p>Portal de práctica de Municipio Fácil</p>
-                    <IonButton expand="block" onClick={() => setPaso(1)}>
+                    <IonButton expand="block" onClick={avanzarAlFormulario}>
                       Ingresar <IonIcon slot="end" icon={arrowForwardOutline} />
                     </IonButton>
                     <small>Acceso de demostración. No uses una cuenta real.</small>
