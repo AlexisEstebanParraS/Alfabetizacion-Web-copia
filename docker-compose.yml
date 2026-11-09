@@ -1,0 +1,51 @@
+# Orquesta los tres servicios (base de datos, API y frontend) con un solo comando:
+#   docker compose up --build
+# El frontend vive en la rama "frontend"; se usa la carpeta del worktree
+# (por defecto ../frontend-app, ver README). Se puede cambiar con FRONTEND_PATH en el .env.
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en el .env}
+      POSTGRES_DB: municipio-facil
+    volumes:
+      # Volumen: los registros de PostgreSQL se conservan aunque se recree el contenedor
+      - db_data:/var/lib/postgresql/data
+      # Se ejecuta solo la primera vez (cuando el volumen está vacío)
+      - ./database.sql:/docker-entrypoint-initdb.d/01-database.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d municipio-facil"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    env_file: .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: municipio-facil
+      # Con Docker el frontend se abre en http://localhost:8080
+      FRONTEND_ORIGIN: http://localhost:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ${FRONTEND_PATH:-../frontend-app}
+      args:
+        # El navegador llama a la API desde el computador anfitrión
+        VITE_API_URL: http://localhost:3000/api
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
+volumes:
+  db_data:

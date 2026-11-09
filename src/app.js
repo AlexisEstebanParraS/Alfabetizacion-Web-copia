@@ -2,13 +2,14 @@ import 'dotenv/config'; // Primera línea: carga el .env antes de importar el re
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { probarConexion } from './config/db.js';
+import { pool, probarConexion } from './config/db.js';
 
 // Importar rutas
 import authRutas from './routes/auth_rutas.js';
 import modulosRutas from './routes/modulos_rutas.js';
 import progresoRutas from './routes/progreso_rutas.js';
 import adminRoutes from './routes/admin_rutas.js';
+import usuariosRutas from './routes/usuarios_rutas.js';
 
 // Importar middlewares de error
 import { rutaNoEncontrada, errorHandler } from './middlewares/error.js';
@@ -37,8 +38,14 @@ app.use(express.json());
 probarConexion();
 
 // Endpoints públicos
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ ok: true, message: 'API Municipio Fácil operativa' });
+// Health: comprueba que la API y la base de datos responden (503 si la base de datos no está disponible)
+app.get('/api/health', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.status(200).json({ ok: true, message: 'API Municipio Fácil operativa', db: 'ok' });
+  } catch {
+    res.status(503).json({ ok: false, error: { mensaje: 'Base de datos no disponible' } });
+  }
 });
 app.use('/api/auth', authRutas);
 
@@ -46,12 +53,14 @@ app.use('/api/auth', authRutas);
 app.use('/api/modulos', modulosRutas);
 app.use('/api/progreso', progresoRutas);
 app.use('/api/admin', adminRoutes);
+app.use('/api/usuarios', usuariosRutas);
 
 // Manejo de errores
 app.use(rutaNoEncontrada);
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+// 0.0.0.0: escucha en todas las interfaces, necesario para recibir conexiones dentro de Docker
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor backend corriendo en http://localhost:${PORT}`);
 });
 
